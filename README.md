@@ -1,2 +1,3 @@
-# project-381
-Seizing the sneeze, stochastically
+# MATH 381 Group Project
+
+"Seizing the sneeze, stochastically"
