@@ -43,7 +43,7 @@ def room_flu_simulate(r_dim, c_dim, d, p):
                     for dr in (-1, 0, 1):
                         for dc in (-1, 0, 1):
                             # don't count yourself, stay within the grid,
-                            # and neigbor is sick
+                            # and neighbor is sick
                             if (dr, dc) != (0, 0) \
                                     and row + dr >= 0 and row + dr < r_dim \
                                     and col + dc >= 0 and col + dc < c_dim \
@@ -103,7 +103,7 @@ for p in p_list:
             for col in range(c_dim):
                 if room_log[t][row][col] == 1:
                     infected[t] += 1
-    infected_frac = [infected[i] / (r_dim * c_dim) for i in range(len(infected))]
+    infected_frac = [1.0*infected[i] / (r_dim * c_dim) for i in range(len(infected))]
     plt.figure(1)
     plt.plot(range(d+1), infected_frac, label=('p = ' + str(p)))
     print("Total number of infections over time: " + str(infected))
