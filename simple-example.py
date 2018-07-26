@@ -1,4 +1,5 @@
 import random
+import matplotlib.pyplot as plt
 
 # For reproducability
 random.seed(100)
@@ -73,17 +74,40 @@ def room_flu_simulate(r_dim, c_dim, d, p):
 # (row, column) dimensions of room
 r_dim = 4
 c_dim = 5
-d = 5 # number of days to run simulation
-p_transmission = 0.25 # probability of transmission to adjacent student
+# number of days to run simulation
+d = 5
+# list of probabilities of transmission to adjacent student
+p_list = (0.05, 0.1, 0.25, 0.5, 0.75, 1)
 
 
 # Run the simulation!
 
-for p in (0.05, 0.1, 0.25, 0.5, 0.75, 1):
+f1 = plt.figure(1) # For plotting infections over time
+plt.xlabel("Time step")
+plt.ylabel("Fraction of students infected")
+f2 = plt.figure(2) # For plotting average number of days uninfected
+plt.xlabel("Probability of transmission")
+plt.ylabel("Average number of days uninfected")
+
+uninfected_avgs = []
+for p in p_list:
     print('\n\n*** p = ' + str(p) + ' ***\n')
     room_log = room_flu_simulate(r_dim, c_dim, d, p)
 
     # Stats
+    
+    # Total infected at each time step
+    infected = [0 for i in range(d+1)]
+    for t in range(d+1):
+        for row in range(r_dim):
+            for col in range(c_dim):
+                if room_log[t][row][col] == 1:
+                    infected[t] += 1
+    infected_frac = [infected[i] / (r_dim * c_dim) for i in range(len(infected))]
+    plt.figure(1)
+    plt.plot(range(d+1), infected_frac, label=('p = ' + str(p)))
+    print("Total number of infections over time: " + str(infected))
+    print("Total fraction of infections over time: " + str(infected_frac))
 
     # Average number of days uninfected
     uninfected_days = 0;
@@ -93,4 +117,13 @@ for p in (0.05, 0.1, 0.25, 0.5, 0.75, 1):
             uninfected_days += history.count(0)
     uninfected_days /= (r_dim * c_dim) # average over total number of students
     print("Average number of days uninfected: " + str(uninfected_days))
+    uninfected_avgs.append(uninfected_days)
 
+plt.figure(1)
+plt.legend()
+plt.figure(2)
+plt.plot(p_list, uninfected_avgs)
+
+# Save figures
+f1.savefig('simple-example-data/infections_over_time.pdf')
+f2.savefig('simple-example-data/avg_days_uninfected.pdf')
