@@ -123,6 +123,7 @@ plt.figure(1)
 plt.legend()
 plt.figure(2)
 plt.plot(p_list, uninfected_avgs)
+plt.show()
 
 # Save figures
 f1.savefig('simple-example-data/infections_over_time.pdf')
