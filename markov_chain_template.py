@@ -11,8 +11,33 @@ def update_states(room, tran_mat):
     for row in range(shape[0]):
         for col in range(shape[1]):
             student = room[row, col]
-            neighbors = student.get_neighbors()
             # do stuff to update state
+
+            # Probablistic Updates: Using our markov chain
+
+            rand_val = r.random()
+            # extracts a single row from transition matrix
+            new_state_probs = tran_mat.tolist()[student.get_state()]
+            cummulative_sum = 0
+
+            # determines end state for the given start state of
+            # student by generating random number and finding which bin
+            # it lies in
+            for index, prob in enumerate(new_state_probs):
+                cummulative_sum += prob
+                if rand_val <= cummulative_sum:
+                    student.set_state(index)
+                    break
+
+    # It looks weird having these loops separate, but it deals with the issue that
+    # sometimes someone gets infected AFTER you look past some people. So you have
+    # to go back retroactively to update the people who are now sick, and now next to
+    # sick people
+    for row in range(shape[0]):
+        for col in range(shape[1]):
+            student = room[row, col]
+            neighbors = student.get_neighbors()
+            # Manual Updates: not part of our markov chain probabilities
 
             # if state = infected, increase count for days infected
             if student.get_state() == 2:
@@ -21,10 +46,6 @@ def update_states(room, tran_mat):
             # if there is a sick person nearby and I am not sick, I become at risk
             elif student.get_state() == 0 and 2 in [x.get_state() for x in neighbors]:
                student.set_state(1)
-
-            # if I am at risk, there is a chance I become infected
-            elif student.get_state() == 1 and r.random() <= tran_mat[1,2]:
-                student.set_state(2)
 
 
 
@@ -101,7 +122,7 @@ def run_simulation(tran_mat, class_sizes, time_steps):
 
 
 # classroom dimensions: each tuple = 1 classroom
-class_sizes = {(5,5), (10,5)}
+class_sizes = {(5,5)}
 
 time_steps = 100 # days to run simulation for
 
@@ -109,6 +130,9 @@ time_steps = 100 # days to run simulation for
 # put it here in case we need it in the future
 
 # right now, 0.2 is the chance of going from state: near sick person -> sick
-transition_matrix = np.matrix('0.95 0 0.05; 0 0.8 0.2; 0 0 1')  #rows = curr state, col = next state
+transition_matrix = np.matrix('0.99 0 0.01; 0 0.9 0.1; 0 0 1')  #rows = curr state, col = next state
+# 0.99  0       0.01     state 0: not sick and not at risk
+# 0     0.9     0.1      state 1: not sick but at risk
+# 0     0       1        state 2: sick
 
 run_simulation(transition_matrix, class_sizes, time_steps)
