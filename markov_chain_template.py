@@ -122,7 +122,7 @@ def run_simulation(tran_mat, class_sizes, time_steps):
 
 
 # classroom dimensions: each tuple = 1 classroom
-class_sizes = {(5,5)}
+class_sizes = {(5,5), (10,2)}
 
 time_steps = 100 # days to run simulation for
 
