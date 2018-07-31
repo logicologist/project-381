@@ -4,33 +4,7 @@ import random as r
 import time
 import itertools as itr
 
-class Student:
-    def __init__(self):
-        # state 0 = susceptible/uninfected
-        # state 1 = susceptible + sick people around
-        # state 2 = sick
-        # state 3 = recovered (immune)
-        self.state = 0
-        self.days_infected = 0
-        self.neighbors = set()
-
-    def get_state(self):
-        return self.state
-
-    def set_state(self, state):
-        self.state = state
-
-    def add_neighbor(self, other):
-        self.neighbors.add(other)
-
-    def get_neighbors(self):
-        return self.neighbors
-
-    # toString method
-    def __repr__(self):
-        return str(self.state)
-
-
+from Student import *
 
 # classroom dimensions
 row_dim = 5
@@ -91,14 +65,14 @@ def run_simulation(tran_mat):
     # infect random student: patient zero
     results[0, np.random.randint(0, row_dim),np.random.randint(0,col_dim)].set_state(2)
 
-    print "day: 0"
-    print results[0, :, :] #initial room state
+    print("day: 0")
+    print(results[0, :, :]) #initial room state
 
     for day in range(1, time_steps):
         update_states(results[day - 1, :, :], tran_mat)
         results[day, :, :] = results[day -1, :, :]
-        print "day: ", day
-        print results[day, :, :]
+        print("day: ", day)
+        print(results[day, :, :])
 
 
 
