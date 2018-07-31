@@ -102,16 +102,16 @@ def run_simulation(tran_mat, class_sizes, time_steps):
         classrooms.append(initialize_sim(cs, time_steps))
 
     # prints initial room state for each classroom
-    for results in classrooms:
-        print("day: 0")
+    for i, results in enumerate(classrooms):
+        print("day: 0, classroom: " + str(i + 1))
         print(results[0, :, :]) #initial room state
 
     # runs simulation across all classrooms
     for day in range(1, time_steps):
-        for results in classrooms:
+        for i, results in enumerate(classrooms):
             update_states(results[day - 1, :, :], tran_mat)
             results[day, :, :] = results[day -1, :, :]
-            print("day: ", day)
+            print("day: " + str(day) + ", classroom: " + str(i + 1))
             print(results[day, :, :])
 
 
