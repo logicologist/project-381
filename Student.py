@@ -8,6 +8,7 @@ Created on Mon Jul 30 21:42:07 2018
 
 class Student:
     def __init__(self):
+        # all possible states (subject to change)
         # state 0 = susceptible/uninfected
         # state 1 = susceptible + sick people around
         # state 2 = sick
@@ -31,3 +32,6 @@ class Student:
 
     def get_neighbors(self):
         return self.neighbors
+
+    def get_days_infected(self):
+        return self.days_infected
