@@ -19,6 +19,7 @@ def update_states(room, tran_mat):
 
             # extracts a single row from transition matrix
             new_state_probs = tran_mat.tolist()[student.get_state()]
+
             cummulative_sum = 0
 
             # determines end state for the given start state of
@@ -36,7 +37,7 @@ def update_states(room, tran_mat):
     # sick people
     # alternatively, we could just look through all the neighbors of people who become
     # sick and assign from there, but I thought we might have future uses for this
-    # manual update loop
+    # manual update loop. I think it may be helpful to keep track of metadata within students
     for row in range(shape[0]):
         for col in range(shape[1]):
             student = room[row, col]
@@ -128,8 +129,8 @@ def run_simulation(tran_mat, class_sizes, time_steps):
 
 
 
-# classroom dimensions: each tuple = 1 classroom
-class_sizes = {(5,5), (10,2)}
+# classroom dimensions: each tuple = 1 classroom (rows, columns)
+class_sizes = {(5,5), (2,2)}
 
 time_steps = 100 # days to run simulation for
 
@@ -137,10 +138,11 @@ time_steps = 100 # days to run simulation for
 # put it here in case we need it in the future
 
 # right now, 0.1 is the chance of going from state: near sick person -> sick
-transition_matrix = np.matrix('0.99 0 0.01; 0 0.9 0.1; 0 0 1')  #rows = curr state, col = next state
-# 0.99  0       0.01     state 0: not sick and not at risk
-# 0     0.9     0.1      state 1: not sick but at risk
-# 0     0       1        state 2: sick
+transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.98 0.02; 0 0 0 1')  #rows = curr state, col = next state
+# 0.99  0       0.01       0      state 0: not sick and not at risk
+# 0     0.9     0.1        0      state 1: not sick but at risk
+# 0     0       0.98       0.02   state 2: sick
+# 0     0       0          1      state 3: recovered (immune)
 
 
 run_simulation(transition_matrix, class_sizes, time_steps)
