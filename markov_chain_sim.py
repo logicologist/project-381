@@ -1,12 +1,13 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import random as r
 import time
+import math
 import itertools as itr
 
 from Student import *
 
-def update_states(room, tran_mat):
+def update_states(room, tran_mat, day):
     shape = np.shape(room)
     for row in range(shape[0]):
         for col in range(shape[1]):
@@ -48,7 +49,7 @@ def update_states(room, tran_mat):
 
             # if state = infected, increase count for days infected
             if student.get_state() == 2:
-               student.days_infected += 1
+               student.add_day_infected(day)
 
             # if there is a sick person nearby and I am not sick, I become at risk
             elif student.get_state() == 0 and 2 in [x.get_state() for x in neighbors]:
@@ -89,20 +90,75 @@ def initialize_class(class_size, time_steps):
 
     # infect random student: patient zero
     # we can change/expand upon this with future ideas (i.e. vaccinations)
-    results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)].set_state(2)
+    patient_zero = results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)]
+    patient_zero.set_state(2)
+    patient_zero.add_day_infected(0)
     return results
+
+
+# Plots some information about simulation such as:
+#     fraction sick each day (line)
+#     total days spent sick for each individual (histogram)
+def graph_results(classrooms, time_steps):
+    t_vals = list(range(time_steps))
+    for i, cs in enumerate(classrooms):
+        end_results = cs[-1,: :]
+        counts = list()
+        days_sick = list()
+        for row in end_results:
+            for student in row:
+                counts = counts + student.days_infected
+                days_sick += [len(student.days_infected)]
+
+        plt.figure(i + 2)
+
+        binWidth = 5
+        edges = list(range(0, time_steps + 1, binWidth))
+        plt.hist(days_sick, bins=edges, rwidth=0.9)
+        plt.title("Classroom " + str(i+1))
+        plt.xlabel("Days Spent Sick")
+        plt.ylabel("# Students")
+        plt.xticks(edges)
+
+
+        class_shape = np.shape(end_results)
+        class_size = class_shape[0]*class_shape[1]
+        frac_sick = [counts.count(x) * 1.0 / class_size for x in t_vals]
+
+
+        plt.figure(1)
+        plt.plot(t_vals, frac_sick, label="Classroom " + str(i+1) + " shape: " + str(class_shape))
+    plt.figure(1)
+    plt.legend(loc='best')
+    plt.ylabel("Fraction Classroom Infected")
+    plt.xlabel("Day")
+    plt.xticks(list(range(0, time_steps, 2)))
+
+    plt.show()
+
+
 
 
 
 # runs a single simulation for the spread of the flu
+# preconditions: no classroom has more than 1 / classes_per_student of the total number
+#                of seats
 # parameters:
 #       tran_mat = transition matrix between states
 #       class_sizes = set of 2-member tuples (rows, columns)
 #       time_steps = days to run simulation for
-def run_simulation(tran_mat, class_sizes, time_steps):
+def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1):
 
     # list of results for all classrooms (list of our ndarrays)
     classrooms = list()
+
+    total_class_seats = sum(map(lambda x: x[0]*x[1], class_sizes))
+    student_count = math.ceil(total_class_seats * 1.0 / classes_per_student)
+
+    #TO DO: find way to distribute students
+    #   do we want each student to be in N classes
+    #   do we want a set # of students to be distributed through the classes, with some taking more than others?
+
 
     for cs in class_sizes:
         # we also may want to consider creating a vector of students, and passing
@@ -127,10 +183,13 @@ def run_simulation(tran_mat, class_sizes, time_steps):
         print("-"*40)
         print("Day: " + str(day) + "\n")
         for i, results in enumerate(classrooms):
-            update_states(results[day - 1, :, :], tran_mat)
+            update_states(results[day - 1, :, :], tran_mat, day)
             results[day, :, :] = results[day - 1, :, :]
             print("Classroom: " + str(i + 1))
             print(str(results[day, :, :]) + "\n")
+
+
+    graph_results(classrooms, time_steps)
 
 
 
