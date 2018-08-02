@@ -14,7 +14,7 @@ class Student:
         # state 2 = sick
         # state 3 = recovered (immune)
         self.state = 0
-        self.days_infected = 0
+        self.days_infected = list()
         self.neighbors = set()
 
     # toString method
@@ -32,6 +32,9 @@ class Student:
 
     def get_neighbors(self):
         return self.neighbors
+
+    def add_day_infected(self, day):
+        self.days_infected.append(day)
 
     def get_days_infected(self):
         return self.days_infected
