@@ -1,4 +1,4 @@
-# have certain number of classes, 20 students each, 3 classes
+
 
 import random
 
