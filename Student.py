@@ -10,16 +10,20 @@ class Student:
     def __init__(self):
         # all possible states (subject to change)
         # state 0 = susceptible/uninfected
-        # state 1 = susceptible + sick people around
+
         # state 2 = sick
         # state 3 = recovered (immune)
         self.state = 0
         self.days_infected = list()
         self.neighbors = set()
+        self.stays_sick_for = 0
 
     # toString method
     def __repr__(self):
         return str(self.state)
+
+    def set_days_sick(self, days_sick):
+        self.stays_sick_for = days_sick
 
     def get_state(self):
         return self.state

@@ -6,6 +6,7 @@ import math
 import itertools as itr
 
 from Student import *
+from classes import classes
 
 def update_states(room, tran_mat, day, weekends = False):
     shape = np.shape(room)
@@ -17,25 +18,13 @@ def update_states(room, tran_mat, day, weekends = False):
 
             # implementing "weekend": only run this section if
             #       student.get_state() = 2 (i.e. we are sick = chance to recover over weekend)
-            #       not day % 7 in [5,6] --> we are not on a weekend
-            if not weekends or (student.get_state() == 2 or not day % 7 in [5,6]):
+            #       not day % 7 in [5,6] --> we are not on a weekend; 5,6 arbitrary
+            if not weekends or (student.get_state() == 2 or not day % 7 in [5, 6]):
                 rand_val = r.random()
 
-                # extracts a single row from transition matrix
-                # i.e. if student is at state i, this row i represents the
-                # probabilities they transition to any of the other states
-                new_state_probs = tran_mat.tolist()[student.get_state()]
-
-                cumulative_sum = 0
-
-                # determines end state for the given start state of
-                # student by generating random number and finding which bin
-                # it lies in
-                for index, prob in enumerate(new_state_probs):
-                    cumulative_sum += prob
-                    if rand_val <= cumulative_sum:
-                        student.set_state(index)
-                        break
+                if (student.get_state() == 2):
+                    student.days_infected += 1
+                    # determine if recovers: Poisson
 
     # It looks weird having these loops separate, but it deals with the issue that
     # sometimes someone gets infected AFTER you look past some people. So you have
@@ -44,20 +33,6 @@ def update_states(room, tran_mat, day, weekends = False):
     # alternatively, we could just look through all the neighbors of people who become
     # sick and assign from there, but I thought we might have future uses for this
     # manual update loop. I think it may be helpful to keep track of metadata within students
-    for row in range(shape[0]):
-        for col in range(shape[1]):
-            student = room[row, col]
-            neighbors = student.get_neighbors()
-
-            # Manual Updates: not part of our markov chain probabilities
-
-            # if state = infected, increase count for days infected
-            if student.get_state() == 2:
-               student.add_day_infected(day)
-
-            # if there is a sick person nearby and I am not sick, I become at risk
-            elif student.get_state() == 0 and 2 in [x.get_state() for x in neighbors]:
-               student.set_state(1)
 
 
 # initializes a single classroom for a given simulation (populates with students)
@@ -153,12 +128,11 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, w
     # list of results for all classrooms (list of our ndarrays)
     classrooms = list()
 
-    total_class_seats = sum(map(lambda x: x[0]*x[1], class_sizes))
-    student_count = math.ceil(total_class_seats * 1.0 / classes_per_student)
-
     # TO DO: find way to distribute students
     #   do we want each student to be in N classes
     #   do we want a set # of students to be distributed through the classes, with some taking more than others?
+
+    # classes.py
 
     for cs in class_sizes:
         # we also may want to consider creating a vector of students, and passing
@@ -192,20 +166,18 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, w
 
 
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
-class_sizes = {(5,5), (10,10), (100, 100)}
+class_sizes = [(5, 5), (10, 10), (3, 7), (100, 100)]
 
-time_steps = 100 # days to run simulation for
+time_steps = 100  # days to run simulation for
 
-# probabilities of transitioning between states; not used much yet, but I
-# put it here in case we need it in the future
-
+# probabilities of transitioning between states
 # right now, 0.1 is the chance of going from state: near sick person -> sick
 # rows = curr state, columns = next state
-transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.98 0.02; 0 0 0 1')
+transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.8 0.2; 0 0 0 1')
 # 0.99  0       0.01       0      state 0: not sick and not at risk
 # 0     0.9     0.1        0      state 1: not sick but at risk
-# 0     0       0.98       0.02   state 2: sick
+# 0     0       0.8       0.2     state 2: sick
 # 0     0       0          1      state 3: recovered (immune)
 
 
-run_simulation(transition_matrix, class_sizes, time_steps, weekends=True)
+run_simulation(transition_matrix, class_sizes, time_steps, weekends=False)
