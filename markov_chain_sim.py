@@ -7,7 +7,7 @@ import itertools as itr
 
 from Student import *
 
-def update_states(room, tran_mat, day):
+def update_states(room, tran_mat, day, weekends = False):
     shape = np.shape(room)
     for row in range(shape[0]):
         for col in range(shape[1]):
@@ -15,23 +15,27 @@ def update_states(room, tran_mat, day):
 
             # Probabilistic Updates: Using our Markov Chain
 
-            rand_val = r.random()
+            # implementing "weekend": only run this section if
+            #       student.get_state() = 2 (i.e. we are sick = chance to recover over weekend)
+            #       not day % 7 in [5,6] --> we are not on a weekend
+            if not weekends or (student.get_state() == 2 or not day % 7 in [5,6]):
+                rand_val = r.random()
 
-            # extracts a single row from transition matrix
-            # i.e. if student is at state i, this row i represents the
-            # probabilities they transition to any of the other states
-            new_state_probs = tran_mat.tolist()[student.get_state()]
+                # extracts a single row from transition matrix
+                # i.e. if student is at state i, this row i represents the
+                # probabilities they transition to any of the other states
+                new_state_probs = tran_mat.tolist()[student.get_state()]
 
-            cumulative_sum = 0
+                cumulative_sum = 0
 
-            # determines end state for the given start state of
-            # student by generating random number and finding which bin
-            # it lies in
-            for index, prob in enumerate(new_state_probs):
-                cumulative_sum += prob
-                if rand_val <= cumulative_sum:
-                    student.set_state(index)
-                    break
+                # determines end state for the given start state of
+                # student by generating random number and finding which bin
+                # it lies in
+                for index, prob in enumerate(new_state_probs):
+                    cumulative_sum += prob
+                    if rand_val <= cumulative_sum:
+                        student.set_state(index)
+                        break
 
     # It looks weird having these loops separate, but it deals with the issue that
     # sometimes someone gets infected AFTER you look past some people. So you have
@@ -56,17 +60,15 @@ def update_states(room, tran_mat, day):
                student.set_state(1)
 
 
-
-
 # initializes a single classroom for a given simulation (populates with students)
 # parameters:
 #      class_size is tuple (rows, cols)
 #       time_steps = days to run simulation for
-def initialize_class(class_size, time_steps):
-    #room information stored here; who is sick when and what not
+def initialize_class(class_size, num_days):
+    # room information stored here; who is sick when and what not
     row_dim = class_size[0]
     col_dim = class_size[1]
-    results = np.ndarray(shape=(time_steps, row_dim, col_dim), dtype=object)
+    results = np.ndarray(shape=(num_days, row_dim, col_dim), dtype=object)
 
     # again, in the future we might consider creating all our students first
     # so we can randomly distribute them throughout the classrooms
@@ -98,11 +100,11 @@ def initialize_class(class_size, time_steps):
 
 # Plots some information about simulation such as:
 #     fraction sick each day (line)
-#     total days spent sick for each individual (histogram)
-def graph_results(classrooms, time_steps):
-    t_vals = list(range(time_steps))
+#     total days spent sick for each individual (histogram) in each classroom
+def graph_results(classrooms, num_days):
+    t_vals = list(range(num_days))
     for i, cs in enumerate(classrooms):
-        end_results = cs[-1,: :]
+        end_results = cs[-1, :, :]
         counts = list()
         days_sick = list()
         for row in end_results:
@@ -112,32 +114,29 @@ def graph_results(classrooms, time_steps):
 
         plt.figure(i + 2)
 
-        binWidth = 5
-        edges = list(range(0, time_steps + 1, binWidth))
+        class_shape = np.shape(end_results)
+
+        bin_width = 5
+        edges = list(range(0, num_days + 1, bin_width))
         plt.hist(days_sick, bins=edges, rwidth=0.9)
-        plt.title("Classroom " + str(i+1))
+        plt.title("Classroom " + str(i+1) + " shape: " + str(class_shape))
         plt.xlabel("Days Spent Sick")
         plt.ylabel("# Students")
         plt.xticks(edges)
 
-
-        class_shape = np.shape(end_results)
         class_size = class_shape[0]*class_shape[1]
         frac_sick = [counts.count(x) * 1.0 / class_size for x in t_vals]
 
-
         plt.figure(1)
         plt.plot(t_vals, frac_sick, label="Classroom " + str(i+1) + " shape: " + str(class_shape))
+
     plt.figure(1)
     plt.legend(loc='best')
     plt.ylabel("Fraction Classroom Infected")
     plt.xlabel("Day")
-    plt.xticks(list(range(0, time_steps, 2)))
+    plt.xticks(list(range(0, num_days, 5)))
 
     plt.show()
-
-
-
 
 
 # runs a single simulation for the spread of the flu
@@ -147,7 +146,9 @@ def graph_results(classrooms, time_steps):
 #       tran_mat = transition matrix between states
 #       class_sizes = set of 2-member tuples (rows, columns)
 #       time_steps = days to run simulation for
-def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1):
+#       classes_per_student = allows a student to be placed in multiple classrooms; allows cross-infection
+#       weekends = True to include weekends (i.e. no class Sat/Sun; cannot spread flu) but allows sick to recover
+def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, weekends=False):
 
     # list of results for all classrooms (list of our ndarrays)
     classrooms = list()
@@ -155,10 +156,9 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1):
     total_class_seats = sum(map(lambda x: x[0]*x[1], class_sizes))
     student_count = math.ceil(total_class_seats * 1.0 / classes_per_student)
 
-    #TO DO: find way to distribute students
+    # TO DO: find way to distribute students
     #   do we want each student to be in N classes
     #   do we want a set # of students to be distributed through the classes, with some taking more than others?
-
 
     for cs in class_sizes:
         # we also may want to consider creating a vector of students, and passing
@@ -176,43 +176,36 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1):
     print("Day: 0 \n")
     for i, results in enumerate(classrooms):
         print("Classroom: " + str(i + 1))
-        print(str(results[0, :, :]) + "\n") #initial room state
+        print(str(results[0, :, :]) + "\n")
 
-    # runs simulation across all classrooms
+    # runs simulation across all classrooms for "time_steps" days
     for day in range(1, time_steps):
         print("-"*40)
         print("Day: " + str(day) + "\n")
         for i, results in enumerate(classrooms):
-            update_states(results[day - 1, :, :], tran_mat, day)
+            update_states(results[day - 1, :, :], tran_mat, day, weekends)
             results[day, :, :] = results[day - 1, :, :]
             print("Classroom: " + str(i + 1))
             print(str(results[day, :, :]) + "\n")
 
-
     graph_results(classrooms, time_steps)
 
 
-
-
-
-
-
-
-
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
-class_sizes = {(5,5), (2,2)}
+class_sizes = {(5,5), (10,10), (100, 100)}
 
-time_steps = 20 # days to run simulation for
+time_steps = 100 # days to run simulation for
 
 # probabilities of transitioning between states; not used much yet, but I
 # put it here in case we need it in the future
 
 # right now, 0.1 is the chance of going from state: near sick person -> sick
-transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.98 0.02; 0 0 0 1')  #rows = curr state, col = next state
+# rows = curr state, columns = next state
+transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.98 0.02; 0 0 0 1')
 # 0.99  0       0.01       0      state 0: not sick and not at risk
 # 0     0.9     0.1        0      state 1: not sick but at risk
 # 0     0       0.98       0.02   state 2: sick
 # 0     0       0          1      state 3: recovered (immune)
 
 
-run_simulation(transition_matrix, class_sizes, time_steps)
+run_simulation(transition_matrix, class_sizes, time_steps, weekends=True)
