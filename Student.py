@@ -16,7 +16,9 @@ class Student:
         self.state = 0
         self.days_infected = list()
         self.neighbors = set()
-        self.stays_sick_for = 0
+
+        # determined using Poisson Distribution with lambda =
+        self.stays_sick_for = 10  # 10 is placeholder for now
 
     # toString method
     def __repr__(self):

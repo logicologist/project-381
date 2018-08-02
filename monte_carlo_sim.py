@@ -8,7 +8,7 @@ import itertools as itr
 from Student import *
 from classes import classes
 
-def update_states(room, tran_mat, day, weekends = False):
+def update_states(room, infect_rate, day, weekends = False):
     shape = np.shape(room)
     for row in range(shape[0]):
         for col in range(shape[1]):
@@ -22,17 +22,20 @@ def update_states(room, tran_mat, day, weekends = False):
             if not weekends or (student.get_state() == 2 or not day % 7 in [5, 6]):
                 rand_val = r.random()
 
-                if (student.get_state() == 2):
-                    student.days_infected += 1
-                    # determine if recovers: Poisson
+                if student.get_state() == 2:
+                    student.days_infected.append(day)
 
-    # It looks weird having these loops separate, but it deals with the issue that
-    # sometimes someone gets infected AFTER you look past some people. So you have
-    # to go back retroactively to update the people who are now sick, and now next to
-    # sick people
-    # alternatively, we could just look through all the neighbors of people who become
-    # sick and assign from there, but I thought we might have future uses for this
-    # manual update loop. I think it may be helpful to keep track of metadata within students
+                    # determine if recovers
+                    if student.stays_sick_for <= len(student.days_infected):
+                        student.set_state(3)
+
+                if student.get_state() == 0:
+                    sick_neighbors = [n.get_state() for n in student.get_neighbors()].count(2)
+                    prob_infected = 1 - (1 - infect_rate)**sick_neighbors
+                    if rand_val <= prob_infected:
+                        student.set_state(2)
+
+
 
 
 # initializes a single classroom for a given simulation (populates with students)
@@ -123,7 +126,7 @@ def graph_results(classrooms, num_days):
 #       time_steps = days to run simulation for
 #       classes_per_student = allows a student to be placed in multiple classrooms; allows cross-infection
 #       weekends = True to include weekends (i.e. no class Sat/Sun; cannot spread flu) but allows sick to recover
-def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, weekends=False):
+def run_simulation(infect_rate, class_sizes, time_steps, classes_per_student = 1, weekends=False):
 
     # list of results for all classrooms (list of our ndarrays)
     classrooms = list()
@@ -157,7 +160,7 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, w
         print("-"*40)
         print("Day: " + str(day) + "\n")
         for i, results in enumerate(classrooms):
-            update_states(results[day - 1, :, :], tran_mat, day, weekends)
+            update_states(results[day - 1, :, :], infect_rate, day, weekends)
             results[day, :, :] = results[day - 1, :, :]
             print("Classroom: " + str(i + 1))
             print(str(results[day, :, :]) + "\n")
@@ -166,18 +169,9 @@ def run_simulation(tran_mat, class_sizes, time_steps, classes_per_student = 1, w
 
 
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
-class_sizes = [(5, 5), (10, 10), (3, 7), (100, 100)]
+class_sizes = [(5, 5), (10, 10)]
 
 time_steps = 100  # days to run simulation for
+infection_rate = 0.1 # chance per sick neighbor of spreading infection
 
-# probabilities of transitioning between states
-# right now, 0.1 is the chance of going from state: near sick person -> sick
-# rows = curr state, columns = next state
-transition_matrix = np.matrix('0.99 0 0.01 0; 0 0.9 0.1 0; 0 0 0.8 0.2; 0 0 0 1')
-# 0.99  0       0.01       0      state 0: not sick and not at risk
-# 0     0.9     0.1        0      state 1: not sick but at risk
-# 0     0       0.8       0.2     state 2: sick
-# 0     0       0          1      state 3: recovered (immune)
-
-
-run_simulation(transition_matrix, class_sizes, time_steps, weekends=False)
+run_simulation(infection_rate, class_sizes, time_steps, weekends=False)
