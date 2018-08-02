@@ -11,23 +11,24 @@ def update_states(room, tran_mat):
     for row in range(shape[0]):
         for col in range(shape[1]):
             student = room[row, col]
-            # do stuff to update state
 
-            # Probablistic Updates: Using our markov chain
+            # Probabilistic Updates: Using our Markov Chain
 
             rand_val = r.random()
 
             # extracts a single row from transition matrix
+            # i.e. if student is at state i, this row i represents the
+            # probabilities they transition to any of the other states
             new_state_probs = tran_mat.tolist()[student.get_state()]
 
-            cummulative_sum = 0
+            cumulative_sum = 0
 
             # determines end state for the given start state of
             # student by generating random number and finding which bin
             # it lies in
             for index, prob in enumerate(new_state_probs):
-                cummulative_sum += prob
-                if rand_val <= cummulative_sum:
+                cumulative_sum += prob
+                if rand_val <= cumulative_sum:
                     student.set_state(index)
                     break
 
@@ -60,7 +61,7 @@ def update_states(room, tran_mat):
 # parameters:
 #      class_size is tuple (rows, cols)
 #       time_steps = days to run simulation for
-def initialize_sim(class_size, time_steps):
+def initialize_class(class_size, time_steps):
     #room information stored here; who is sick when and what not
     row_dim = class_size[0]
     col_dim = class_size[1]
@@ -107,20 +108,30 @@ def run_simulation(tran_mat, class_sizes, time_steps):
         # we also may want to consider creating a vector of students, and passing
         # a random subset of these to each initialize call in an attempt to
         # randomly populate our classes with a shared collection of students
-        classrooms.append(initialize_sim(cs, time_steps))
+        classrooms.append(initialize_class(cs, time_steps))
+
+        # i.e. if we want to assign each student to 3 classes, we could create
+        # sum(class_room_sizes) / 3 students --> [S1 S2 S3 S4 ...]
+        # then we could duplicate these references doing [S1 S2 S3 S4 ...] * 3
+        # and sample the proper number of students for each class; This wont be an issue
+        # as long as no classroom is > 1/3 the sum of all class room sizes.
 
     # prints initial room state for each classroom
+    print("Day: 0 \n")
     for i, results in enumerate(classrooms):
-        print("day: 0, classroom: " + str(i + 1))
-        print(results[0, :, :]) #initial room state
+        print("Classroom: " + str(i + 1))
+        print(str(results[0, :, :]) + "\n") #initial room state
 
     # runs simulation across all classrooms
     for day in range(1, time_steps):
+        print("-"*40)
+        print("Day: " + str(day) + "\n")
         for i, results in enumerate(classrooms):
             update_states(results[day - 1, :, :], tran_mat)
-            results[day, :, :] = results[day -1, :, :]
-            print("day: " + str(day) + ", classroom: " + str(i + 1))
-            print(results[day, :, :])
+            results[day, :, :] = results[day - 1, :, :]
+            print("Classroom: " + str(i + 1))
+            print(str(results[day, :, :]) + "\n")
+
 
 
 
@@ -132,7 +143,7 @@ def run_simulation(tran_mat, class_sizes, time_steps):
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
 class_sizes = {(5,5), (2,2)}
 
-time_steps = 100 # days to run simulation for
+time_steps = 20 # days to run simulation for
 
 # probabilities of transitioning between states; not used much yet, but I
 # put it here in case we need it in the future
