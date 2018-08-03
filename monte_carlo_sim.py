@@ -69,7 +69,7 @@ def initialize_class(class_size, num_days):
                 student.add_neighbor(results[0, pos[0], pos[1]])
 
     # Recovery times: constant 8 days + geometric distribution with mean 2 days
-    recovery_times = (np.random.geometric(0.5, size=row_dim * col_dim)) + 8
+    recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days
     for row in range(row_dim):
         for col in range(col_dim):
             student = results[0, row, col]
@@ -180,5 +180,7 @@ class_sizes = [(5, 5), (10, 10)]
 
 time_steps = 100  # days to run simulation for
 infection_rate = 0.1 # chance per sick neighbor of spreading infection
+recovery_time_fixed_days = 8 # constant number of days that an infected student is sick at minimum
+recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers with this probability each day
 
 run_simulation(infection_rate, class_sizes, time_steps, weekends=False)
