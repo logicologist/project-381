@@ -68,6 +68,13 @@ def initialize_class(class_size, num_days):
             for pos in positions:
                 student.add_neighbor(results[0, pos[0], pos[1]])
 
+    # Recovery times: constant 8 days + geometric distribution with mean 2 days
+    recovery_times = (np.random.geometric(0.5, size=row_dim * col_dim)) + 8
+    for row in range(row_dim):
+        for col in range(col_dim):
+            student = results[0, row, col]
+            student.set_days_sick(recovery_times[row * row_dim + col])
+
     # infect random student: patient zero
     # we can change/expand upon this with future ideas (i.e. vaccinations)
     patient_zero = results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)]

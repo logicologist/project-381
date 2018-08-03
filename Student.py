@@ -17,7 +17,7 @@ class Student:
         self.days_infected = list()
         self.neighbors = set()
 
-        # determined using Poisson Distribution with lambda =
+        # determined using geometric distribution
         self.stays_sick_for = 10  # 10 is placeholder for now
 
     # toString method

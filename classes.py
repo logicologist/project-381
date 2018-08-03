@@ -5,7 +5,7 @@ import random
 def classes(num_classes, students_perclass, num_period):
 
     num_students = students_perclass * num_classes
-    students = range(1, num_students + 1)
+    students = list(range(1, num_students + 1))
 
     class_list = {}
 
