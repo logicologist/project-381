@@ -31,5 +31,5 @@ print(classes([[1,2],[3,4]], 2)) #example
 
 ###Notes:
     #Need to figure out how to implement student object with determining neighbors
-    #Class list is a list, need to change back to array based on room dim to figure out neighbors?
+    #Class list is a list, need to change back to array based on room dim to figure out neighbors
 
