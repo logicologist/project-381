@@ -99,7 +99,7 @@ def graph_results(classrooms, num_days):
                 counts = counts + student.days_infected
                 days_sick += [len(student.days_infected)]
 
-        plt.figure(i + 2)
+#        plt.figure(i + 2)
 
         class_shape = np.shape(end_results)
 
@@ -114,16 +114,15 @@ def graph_results(classrooms, num_days):
         class_size = class_shape[0]*class_shape[1]
         frac_sick = [counts.count(x) * 1.0 / class_size for x in t_vals]
 
-        plt.figure(1)
+#        plt.figure(1)
         plt.plot(t_vals, frac_sick, label="Classroom " + str(i+1) + " shape: " + str(class_shape))
 
-    plt.figure(1)
+#    plt.figure(1)
     plt.legend(loc='best')
     plt.ylabel("Fraction Classroom Infected")
     plt.xlabel("Day")
     plt.xticks(list(range(0, num_days, 5)))
 
-    plt.show()
 
 def graph_frac_infected(classrooms_list, num_days):
     ''' Graphs the average fraction of classroom infected for each classroom,
@@ -182,7 +181,8 @@ def graph_days_infected(classrooms_list, num_days):
     
     bin_width = 5
     edges = list(range(0, num_days + 1, bin_width))
-    fig, ax = plt.subplots()
+#    fig, ax = plt.subplots()
+    ax = plt.gca()
     plt.hist(days_sick, bins=edges, rwidth=0.9)
     y_vals = ax.get_yticks()
     ax.set_yticklabels(['{:1.0f}'.format(x // n_trials) for x in y_vals])
@@ -225,20 +225,20 @@ def run_simulation(infect_rate, class_sizes, time_steps, classes_per_student = 1
         # as long as no classroom is > 1/3 the sum of all class room sizes.
 
     # prints initial room state for each classroom
-    print("Day: 0 \n")
-    for i, results in enumerate(classrooms):
-        print("Classroom: " + str(i + 1))
-        print(str(results[0, :, :]) + "\n")
+#    print("Day: 0 \n")
+#    for i, results in enumerate(classrooms):
+#        print("Classroom: " + str(i + 1))
+#        print(str(results[0, :, :]) + "\n")
 
     # runs simulation across all classrooms for "time_steps" days
     for day in range(1, time_steps):
-        print("-"*40)
-        print("Day: " + str(day) + "\n")
+#        print("-"*40)
+#        print("Day: " + str(day) + "\n")
         for i, results in enumerate(classrooms):
             update_states(results[day - 1, :, :], infect_rate, day, weekends)
             results[day, :, :] = results[day - 1, :, :]
-            print("Classroom: " + str(i + 1))
-            print(str(results[day, :, :]) + "\n")
+#            print("Classroom: " + str(i + 1))
+#            print(str(results[day, :, :]) + "\n")
 
     return classrooms
 
@@ -259,12 +259,13 @@ for trial in range(trials):
     # What the classrooms data structure looks like:
     # classrooms[which_classroom][which_time_step][row][column]
 
-plt.figure(1)
+f1 = plt.figure(1)
 graph_frac_infected(classrooms_list, time_steps)
-plt.figure(2)
+f2 = plt.figure(2)
 graph_days_infected(classrooms_list, time_steps)
 
-plt.show()
+f1.savefig('sim-data/frac_infected.pdf')
+f2.savefig('sim-data/days_infected.pdf')
 
-#graph_results(classrooms_list, time_steps)
+plt.show()
 
