@@ -142,8 +142,11 @@ num_periods = 2 # number of class periods in the day
 infection_rate = 0.15 # chance per sick neighbor of spreading infection
 vaccination_rate = 0.46 # percentage of students who get vaccinated
 vaccination_effectiveness = 0.39 # percent effectiveness of vaccine
-recovery_time_fixed_days = 8 # constant number of days that an infected student is sick at minimum
-recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers with this probability each day
+# Note: recovery time parameters are tuned for infectiousness
+# CDC reports infectiousness lasts from 1 day before symptoms to 5-7 days after,
+# for a total of 6-8 days infectious.
+recovery_time_fixed_days = 6 # constant number of days that an infected student is sick and infectious at minimum
+recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers (stops being infectious) with this probability each day
 
 classrooms_list = []
 for trial in range(trials):
