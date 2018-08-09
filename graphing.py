@@ -72,3 +72,23 @@ def graph_days_infected(classrooms_list, num_days):
     plt.xticks(edges)
 
 
+def graph_disease_burden(students_list, num_days):
+    '''Graphs, for each time step, the number of students who are or have been
+    sick with the flu; averaged over all trials. Params:
+        students_list[which_trial][which_student]
+        num_days: number of time steps'''
+    n_trials = len(students_list)
+    n_students = len(students_list[0])
+    sick_counts = [0 for i in range(num_days)]
+    for t in range(n_trials):
+        for student in students_list[t]:
+            if len(student.days_infected) > 0:
+                day_one = student.days_infected[0]
+                for day in range(day_one, num_days):
+                    sick_counts[day] += 1
+    for i in range(len(sick_counts)):
+        sick_counts[i] /= (n_students * n_trials)
+    plt.plot(list(range(num_days)), sick_counts)
+    plt.ylabel("Fraction of Students Who Have Caught the Flu")
+    plt.xlabel("Day")
+
