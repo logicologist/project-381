@@ -30,9 +30,6 @@ def room_assign(room_dim, student_list, periods):
             room_list.append(np.reshape((student_numbers[c:c + size]), room_dim[d]))
             c += size #adds previous room size to room start index
             d += 1 #moves to next room
-            
-#        # testing
-#        print(room_list)
         
         # room_list is a list(ndarray): room_list[which_room][row][col] = which_student_number
         # compute neighbors, store in corresponding Student objects
@@ -58,6 +55,7 @@ def room_assign(room_dim, student_list, periods):
                         student.add_neighbor(student_list[room_list[i][pos[0]][pos[1]]])
                         
 #        # testing
+#        print(room_list)
 #        for i in range(len(room_list)):
 #            row_dim = room_list[i].shape[0]
 #            col_dim = room_list[i].shape[1]
@@ -66,8 +64,6 @@ def room_assign(room_dim, student_list, periods):
 #        print("\nstudent_list seats:")
 #        print([s.seats for s in student_list])
 #        print()
-
-    return room_list
 
 #room_assign([[4,2],[2,3],[5,4]], [Student() for i in range(34)], 2) #example
 
