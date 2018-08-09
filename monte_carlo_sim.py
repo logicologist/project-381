@@ -5,6 +5,8 @@ import time
 import math
 import itertools as itr
 
+from graphing import *
+
 from Student import *
 from room_assign import *
 
@@ -27,10 +29,12 @@ def update_states(room, infect_rate, day, weekends = False):
                 if student.get_state() == 2:
                     student.days_infected.append(day)
 
-                    # determine if recovers
+                    # determine if sick student recovers
                     if student.stays_sick_for <= len(student.days_infected):
                         student.set_state(3)
 
+                # determine if uninfected student gets infected; more sick people around them
+                # leads to higher infection rate
                 if student.get_state() == 0:
                     sick_neighbors = [n.get_state() for n in student.get_neighbors()].count(2)
                     prob_infected = 1 - (1 - infect_rate)**sick_neighbors
@@ -53,6 +57,7 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
         row_dim = class_size[0]
         col_dim = class_size[1]
         results = np.ndarray(shape=(num_days, row_dim, col_dim), dtype=object)
+
         # create students
         for row in range(row_dim):
             for col in range(col_dim):
@@ -66,7 +71,7 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
     # Assign some students to be vaccinated
     student_nums = list(range(len(student_list)))
     r.shuffle(student_nums)
-    vacc_cutoff = math.floor(len(student_nums) * vaccination_rate)
+    vacc_cutoff = int(math.floor(len(student_nums) * vaccination_rate))
     for i in range(vacc_cutoff):
         s_num = student_nums[i]
         student_list[s_num].set_vaccinated()
@@ -85,8 +90,7 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
             for col in range(col_dim):
                 results = classrooms[i]
                 student = results[0, row, col]
-                student = results[0, row, col]
-                student.set_recovery_time(recovery_times[row * row_dim + col])
+                student.set_recovery_time(recovery_times[row * col_dim + col])
     
     # infect random student: patient zero
     # we can change/expand upon this with future ideas (i.e. vaccinations)
@@ -134,7 +138,7 @@ def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, cla
 
 
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
-class_sizes = [(5, 5), (10, 10)]
+class_sizes = [(5, 5), (10, 10), (5, 10), (25, 4), (50, 16)]
 
 trials = 5 # number of times to run simulation
 time_steps = 100  # days to run simulation for
