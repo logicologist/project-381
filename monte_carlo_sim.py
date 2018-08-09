@@ -45,7 +45,9 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         class_sizes - list of tuples containing (row, column) dimensions of rooms
         num_days - days to run simulation for
         classes_per_student - int for number of class periods'''
+#    classrooms = np.empty((0, 3), dtype=object)
     classrooms = list()
+    student_list = np.empty((0), dtype=object)
     for class_size in class_sizes:
         # room information stored here; who is sick when and what not
         row_dim = class_size[0]
@@ -57,9 +59,28 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         for row in range(row_dim):
             for col in range(col_dim):
                 results[0, row, col] = Student()
+#        classrooms = np.append(classrooms, np.reshape(results, (1, num_days, row_dim, col_dim)), 0)
+        classrooms.append(results)
+        student_list = np.append(student_list, results[0].flatten())
+#    print(classrooms)
+#    print(str(len(classrooms)) + " x " + str(classrooms[0].shape))
+#    print(student_list)
+#    print(student_list.shape)
+#    classrooms = np.array(classrooms) # converting list(ndarray) to ndarray
     
+#    # get list of students
+#    room_size = []
+#    for dim in class_sizes:  # for each set of dim in room_dim
+#        room_size.append(dim[0] * dim[1])  # size = r * c
+#    num_students = sum(room_size)  # total number of students
+#    student_list = classrooms.reshape((num_students))
+    
+    for i, class_size in enumerate(class_sizes):
+        row_dim = class_size[0]
+        col_dim = class_size[1]
         for row in range(row_dim):
             for col in range(col_dim):
+                results = classrooms[i]
                 student = results[0, row, col]
     
                 # all possible combos of row +-1 and col +- 1 (with edge cases)
@@ -76,15 +97,21 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days
         for row in range(row_dim):
             for col in range(col_dim):
+                results = classrooms[i]
+                student = results[0, row, col]
                 student = results[0, row, col]
                 student.set_days_sick(recovery_times[row * row_dim + col])
     
-        # infect random student: patient zero
-        # we can change/expand upon this with future ideas (i.e. vaccinations)
-        patient_zero = results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)]
-        patient_zero.set_state(2)
-        patient_zero.add_day_infected(0)
-        classrooms.append(results)
+    # infect random student: patient zero
+    # we can change/expand upon this with future ideas (i.e. vaccinations)
+    patient_zero = student_list[np.random.randint(0, len(student_list))]
+    patient_zero.set_state(2)
+    patient_zero.add_day_infected(0)
+    # to approximate what the code was doing before (these three lines will go away when room-assign.py code is fully integrated)
+    patient_one = student_list[0]
+    patient_one.set_state(2)
+    patient_one.add_day_infected(0)
+    
     return classrooms
 
 
