@@ -89,45 +89,6 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
     return classrooms
 
 
-# Plots some information about simulation such as:
-#     fraction sick each day (line)
-#     total days spent sick for each individual (histogram) in each classroom
-def graph_results(classrooms, num_days):
-    t_vals = list(range(num_days))
-    for i, cs in enumerate(classrooms):
-        end_results = cs[-1, :, :]
-        counts = list()
-        days_sick = list()
-        for row in end_results:
-            for student in row:
-                counts = counts + student.days_infected
-                days_sick += [len(student.days_infected)]
-
-#        plt.figure(i + 2)
-
-        class_shape = np.shape(end_results)
-
-        bin_width = 5
-        edges = list(range(0, num_days + 1, bin_width))
-        plt.hist(days_sick, bins=edges, rwidth=0.9)
-        plt.title("Classroom " + str(i+1) + " shape: " + str(class_shape))
-        plt.xlabel("Days Spent Sick")
-        plt.ylabel("# Students")
-        plt.xticks(edges)
-
-        class_size = class_shape[0]*class_shape[1]
-        frac_sick = [counts.count(x) * 1.0 / class_size for x in t_vals]
-
-#        plt.figure(1)
-        plt.plot(t_vals, frac_sick, label="Classroom " + str(i+1) + " shape: " + str(class_shape))
-
-#    plt.figure(1)
-    plt.legend(loc='best')
-    plt.ylabel("Fraction Classroom Infected")
-    plt.xlabel("Day")
-    plt.xticks(list(range(0, num_days, 5)))
-
-
 def graph_frac_infected(classrooms_list, num_days):
     ''' Graphs the average fraction of classroom infected for each classroom,
     averaged over all trials run. Params:
