@@ -74,19 +74,11 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
         rand = r.random()
         if (rand < vaccination_effectiveness):
             student_list[s_num].set_state(3)
-    
-    for i, class_size in enumerate(class_sizes):
-        row_dim = class_size[0]
-        col_dim = class_size[1]
-    
-        # Recovery times: constant 8 days + geometric distribution with mean 2 days
-        recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days
-        for row in range(row_dim):
-            for col in range(col_dim):
-                results = classrooms[i]
-                student = results[0, row, col]
-                student = results[0, row, col]
-                student.set_recovery_time(recovery_times[row * row_dim + col])
+            
+    # Recovery times: constant 8 days + geometric distribution with mean 2 days
+    recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=len(student_list))) + recovery_time_fixed_days
+    for i in range(len(student_list)):
+        student_list[i].set_recovery_time(recovery_times[i])
     
     # infect random student: patient zero
     # we can change/expand upon this with future ideas (i.e. vaccinations)
@@ -134,7 +126,21 @@ def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, cla
 
 
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
-class_sizes = [(5, 5), (10, 10)]
+#class_sizes = [(5, 5), (10, 10)]
+class_sizes = [(4, 6), # BAG 106
+               (4, 7), # BAG 108
+               (13, 24), # BAG 131
+               (10, 12), # BAG 154
+               (8, 10), # BAG 260
+               (8, 10), # BAG 261
+               (5, 4), # BAG 331A
+               (3, 10), # JHN 022
+               (3, 10), # JHN 026
+               (7, 12), # JHN 075
+               (12, 16), # JHN 102
+               (3, 14), # JHN 111
+               (4, 16), # JHN 175
+               ]
 
 trials = 5 # number of times to run simulation
 time_steps = 100  # days to run simulation for

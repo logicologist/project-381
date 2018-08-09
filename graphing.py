@@ -36,10 +36,10 @@ def graph_frac_infected(classrooms_list, num_days):
         for t in range(num_days):
             frac_sick_t = [frac_sick_data[trial][classroom_index][t] for trial in range(n_trials)]
             avg_frac_sick.append(sum(frac_sick_t) / len(frac_sick_t))
-        plt.plot(t_vals, avg_frac_sick, label="Classroom " + str(classroom_index+1)) # + " shape: " + str(class_shape))
+        plt.plot(t_vals, avg_frac_sick) #, label="Classroom " + str(classroom_index+1))
 
     # Label figure
-    plt.legend(loc='best')
+#    plt.legend(loc='best')
     plt.ylabel("Fraction Classroom Infected")
     plt.xlabel("Day")
     plt.xticks(list(range(0, num_days, 5)))
