@@ -39,50 +39,53 @@ def update_states(room, infect_rate, day, weekends = False):
 
 
 
-
-# initializes a single classroom for a given simulation (populates with students)
-# parameters:
-#      class_size is tuple (rows, cols)
-#       time_steps = days to run simulation for
-def initialize_class(class_size, num_days):
-    # room information stored here; who is sick when and what not
-    row_dim = class_size[0]
-    col_dim = class_size[1]
-    results = np.ndarray(shape=(num_days, row_dim, col_dim), dtype=object)
-
-    # again, in the future we might consider creating all our students first
-    # so we can randomly distribute them throughout the classrooms
-    for row in range(row_dim):
-        for col in range(col_dim):
-            results[0, row, col] = Student()
-
-    for row in range(row_dim):
-        for col in range(col_dim):
-            student = results[0, row, col]
-
-            # all possible combos of row +-1 and col +- 1 (with edge cases)
-            neigh_rows = list(range(max(0, row - 1), min(row + 1, row_dim - 1) + 1))
-            neigh_cols = list(range(max(0, col - 1), min(col + 1, col_dim - 1) + 1))
-            positions = set(itr.product(neigh_rows, neigh_cols))
-            positions.remove((row, col))   # remove student (student isn't neighbor of themselves)
-
-            # adding all neighbors to given student
-            for pos in positions:
-                student.add_neighbor(results[0, pos[0], pos[1]])
-
-    # Recovery times: constant 8 days + geometric distribution with mean 2 days
-    recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days
-    for row in range(row_dim):
-        for col in range(col_dim):
-            student = results[0, row, col]
-            student.set_days_sick(recovery_times[row * row_dim + col])
-
-    # infect random student: patient zero
-    # we can change/expand upon this with future ideas (i.e. vaccinations)
-    patient_zero = results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)]
-    patient_zero.set_state(2)
-    patient_zero.add_day_infected(0)
-    return results
+def initialize_classrooms(class_sizes, num_days, classes_per_student):
+    '''Initializes a set of classrooms (populated with students) given room sizes
+    Params:
+        class_sizes - list of tuples containing (row, column) dimensions of rooms
+        num_days - days to run simulation for
+        classes_per_student - int for number of class periods'''
+    classrooms = list()
+    for class_size in class_sizes:
+        # room information stored here; who is sick when and what not
+        row_dim = class_size[0]
+        col_dim = class_size[1]
+        results = np.ndarray(shape=(num_days, row_dim, col_dim), dtype=object)
+    
+        # again, in the future we might consider creating all our students first
+        # so we can randomly distribute them throughout the classrooms
+        for row in range(row_dim):
+            for col in range(col_dim):
+                results[0, row, col] = Student()
+    
+        for row in range(row_dim):
+            for col in range(col_dim):
+                student = results[0, row, col]
+    
+                # all possible combos of row +-1 and col +- 1 (with edge cases)
+                neigh_rows = list(range(max(0, row - 1), min(row + 1, row_dim - 1) + 1))
+                neigh_cols = list(range(max(0, col - 1), min(col + 1, col_dim - 1) + 1))
+                positions = set(itr.product(neigh_rows, neigh_cols))
+                positions.remove((row, col))   # remove student (student isn't neighbor of themselves)
+    
+                # adding all neighbors to given student
+                for pos in positions:
+                    student.add_neighbor(results[0, pos[0], pos[1]])
+    
+        # Recovery times: constant 8 days + geometric distribution with mean 2 days
+        recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days
+        for row in range(row_dim):
+            for col in range(col_dim):
+                student = results[0, row, col]
+                student.set_days_sick(recovery_times[row * row_dim + col])
+    
+        # infect random student: patient zero
+        # we can change/expand upon this with future ideas (i.e. vaccinations)
+        patient_zero = results[0, np.random.randint(0, row_dim), np.random.randint(0, col_dim)]
+        patient_zero.set_state(2)
+        patient_zero.add_day_infected(0)
+        classrooms.append(results)
+    return classrooms
 
 
 # Plots some information about simulation such as:
@@ -204,19 +207,13 @@ def graph_days_infected(classrooms_list, num_days):
 def run_simulation(infect_rate, class_sizes, time_steps, classes_per_student = 1, weekends=False):
 
     # list of results for all classrooms (list of our ndarrays)
-    classrooms = list()
+    classrooms = initialize_classrooms(class_sizes, time_steps, classes_per_student)
 
-    # TO DO: find way to distribute students
-    #   do we want each student to be in N classes
-    #   do we want a set # of students to be distributed through the classes, with some taking more than others?
-
-    # classes.py
-
-    for cs in class_sizes:
+#    for cs in class_sizes:
         # we also may want to consider creating a vector of students, and passing
         # a random subset of these to each initialize call in an attempt to
         # randomly populate our classes with a shared collection of students
-        classrooms.append(initialize_class(cs, time_steps))
+#        classrooms.append(initialize_class(cs, time_steps))
 
         # i.e. if we want to assign each student to 3 classes, we could create
         # sum(class_room_sizes) / 3 students --> [S1 S2 S3 S4 ...]
