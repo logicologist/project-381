@@ -93,10 +93,6 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
     patient_zero = student_list[np.random.randint(0, len(student_list))]
     patient_zero.set_state(2)
     patient_zero.add_day_infected(0)
-    # to approximate what the code was doing before (these three lines will go away when room-assign.py code is fully integrated)
-    patient_one = student_list[0]
-    patient_one.set_state(2)
-    patient_one.add_day_infected(0)
     
     return classrooms
 
@@ -142,6 +138,7 @@ class_sizes = [(5, 5), (10, 10)]
 
 trials = 5 # number of times to run simulation
 time_steps = 100  # days to run simulation for
+num_periods = 2 # number of class periods in the day
 infection_rate = 0.15 # chance per sick neighbor of spreading infection
 vaccination_rate = 0.46 # percentage of students who get vaccinated
 vaccination_effectiveness = 0.39 # percent effectiveness of vaccine
@@ -150,7 +147,7 @@ recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers with this 
 
 classrooms_list = []
 for trial in range(trials):
-    classrooms = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, weekends=False)
+    classrooms = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
     classrooms_list.append(classrooms)
     # What the classrooms data structure looks like:
     # classrooms[which_classroom][which_time_step][row][column]
