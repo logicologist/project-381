@@ -15,6 +15,7 @@ class Student:
         # state 3 = recovered (immune)
         self.state = 0
         self.days_infected = list()
+        self.was_vaccinated = False
         
         # set of student's neighbors throughout the day
         self.neighbors = set()
@@ -28,7 +29,7 @@ class Student:
     def __repr__(self):
         return "Student(" + str(self.state) + ")"
 
-    def set_days_sick(self, days_sick):
+    def set_recovery_time(self, days_sick):
         self.stays_sick_for = days_sick
 
     def get_state(self):
@@ -36,6 +37,10 @@ class Student:
 
     def set_state(self, state):
         self.state = state
+        
+    def set_vaccinated(self):
+        '''Records that the student was vaccinated'''
+        self.was_vaccinated = True
 
     def add_neighbor(self, other):
         self.neighbors.add(other)

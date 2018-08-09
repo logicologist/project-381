@@ -38,9 +38,10 @@ def update_states(room, infect_rate, day, weekends = False):
                         student.set_state(2)
 
 
-def initialize_classrooms(class_sizes, num_days, classes_per_student):
+def initialize_classrooms(vaccination_rate, class_sizes, num_days, classes_per_student):
     '''Initializes a set of classrooms (populated with students) given room sizes
     Params:
+        vaccination_rate - fraction of students who get vaccinated
         class_sizes - list of tuples containing (row, column) dimensions of rooms
         num_days - days to run simulation for
         classes_per_student - int for number of class periods'''
@@ -61,6 +62,16 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
     # Assign neighbors
     room_assign(class_sizes, student_list, classes_per_student)
     
+    # Assign some students to be vaccinated
+    student_nums = list(range(len(student_list)))
+    r.shuffle(student_nums)
+    vacc_cutoff = math.floor(len(student_nums) * vaccination_rate)
+    for i in range(vacc_cutoff):
+        s_num = student_nums[i]
+        student_list[s_num].set_vaccinated()
+        student_list[s_num].set_state(3) # for now, 100% vaccine effectiveness
+        # TODO with some probability, the student is actually immune
+    
     for i, class_size in enumerate(class_sizes):
         row_dim = class_size[0]
         col_dim = class_size[1]
@@ -72,7 +83,7 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
                 results = classrooms[i]
                 student = results[0, row, col]
                 student = results[0, row, col]
-                student.set_days_sick(recovery_times[row * row_dim + col])
+                student.set_recovery_time(recovery_times[row * row_dim + col])
     
     # infect random student: patient zero
     # we can change/expand upon this with future ideas (i.e. vaccinations)
@@ -92,15 +103,16 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
 # preconditions: no classroom has more than 1 / classes_per_student of the total number
 #                of seats
 # parameters:
-#       tran_mat = transition matrix between states
+#       infect_rate = probability of infected student infecting susceptible adjacent student (float)
+#       vaccination_rate = fraction of students who get vaccinated against the flu (float)
 #       class_sizes = set of 2-member tuples (rows, columns)
-#       time_steps = days to run simulation for
-#       classes_per_student = allows a student to be placed in multiple classrooms; allows cross-infection
+#       time_steps = days to run simulation for (int)
+#       classes_per_student = allows a student to be placed in multiple classrooms; allows cross-infection (int)
 #       weekends = True to include weekends (i.e. no class Sat/Sun; cannot spread flu) but allows sick to recover
-def run_simulation(infect_rate, class_sizes, time_steps, classes_per_student = 1, weekends=False):
+def run_simulation(infect_rate, vaccination_rate, class_sizes, time_steps, classes_per_student = 1, weekends=False):
 
     # list of results for all classrooms (list of our ndarrays)
-    classrooms = initialize_classrooms(class_sizes, time_steps, classes_per_student)
+    classrooms = initialize_classrooms(vaccination_rate, class_sizes, time_steps, classes_per_student)
 
 #    for cs in class_sizes:
         # we also may want to consider creating a vector of students, and passing
@@ -138,13 +150,15 @@ class_sizes = [(5, 5), (10, 10)]
 
 trials = 5 # number of times to run simulation
 time_steps = 100  # days to run simulation for
-infection_rate = 0.1 # chance per sick neighbor of spreading infection
+infection_rate = 0.15 # chance per sick neighbor of spreading infection
+vaccination_rate = 0.46 # percentage of students who get vaccinated
+# TODO add vaccination effectiveness also?
 recovery_time_fixed_days = 8 # constant number of days that an infected student is sick at minimum
 recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers with this probability each day
 
 classrooms_list = []
 for trial in range(trials):
-    classrooms = run_simulation(infection_rate, class_sizes, time_steps, weekends=False)
+    classrooms = run_simulation(infection_rate, vaccination_rate, class_sizes, time_steps, weekends=False)
     classrooms_list.append(classrooms)
     # What the classrooms data structure looks like:
     # classrooms[which_classroom][which_time_step][row][column]
