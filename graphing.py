@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 from Student import *
 from room_assign import *
@@ -72,11 +73,13 @@ def graph_days_infected(classrooms_list, num_days):
     plt.xticks(edges)
 
 
-def graph_disease_burden(students_list, num_days):
+def graph_disease_burden(students_list, num_days, v_rate=0.46, legend=False):
     '''Graphs, for each time step, the number of students who are or have been
     sick with the flu; averaged over all trials. Params:
         students_list[which_trial][which_student]
-        num_days: number of time steps'''
+        num_days: number of time steps
+        v_rate: vaccination rate for this experiment
+        legend: whether to include a legend in the graph'''
     n_trials = len(students_list)
     n_students = len(students_list[0])
     sick_counts = [0 for i in range(num_days)]
@@ -88,7 +91,10 @@ def graph_disease_burden(students_list, num_days):
                     sick_counts[day] += 1
     for i in range(len(sick_counts)):
         sick_counts[i] /= (n_students * n_trials)
-    plt.plot(list(range(num_days)), sick_counts)
+    if (legend):
+        plt.plot(list(range(num_days)), sick_counts, label=str(round(v_rate*100,1))+"% vaccinated")
+    else:
+        plt.plot(list(range(num_days)), sick_counts)
     plt.ylabel("Fraction of Students Who Have Caught the Flu")
     plt.xlabel("Day")
 
