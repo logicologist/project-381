@@ -6,6 +6,7 @@ import math
 import itertools as itr
 
 from Student import *
+from room_assign import *
 from classes import classes
 
 r.seed(42) # for reproducability
@@ -59,25 +60,28 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         classrooms.append(results)
         student_list = np.append(student_list, results[0].flatten())
     
+    # Assign neighbors
+    room_assign(class_sizes, student_list, classes_per_student)
+    
     for i, class_size in enumerate(class_sizes):
         row_dim = class_size[0]
         col_dim = class_size[1]
         
-        # Compute neighbors: this code will go away when room-assign.py code is fully integrated
-        for row in range(row_dim):
-            for col in range(col_dim):
-                results = classrooms[i]
-                student = results[0, row, col]
-    
-                # all possible combos of row +-1 and col +- 1 (with edge cases)
-                neigh_rows = list(range(max(0, row - 1), min(row + 1, row_dim - 1) + 1))
-                neigh_cols = list(range(max(0, col - 1), min(col + 1, col_dim - 1) + 1))
-                positions = set(itr.product(neigh_rows, neigh_cols))
-                positions.remove((row, col))   # remove student (student isn't neighbor of themselves)
-    
-                # adding all neighbors to given student
-                for pos in positions:
-                    student.add_neighbor(results[0, pos[0], pos[1]])
+#        # Compute neighbors: this code will go away when room-assign.py code is fully integrated
+#        for row in range(row_dim):
+#            for col in range(col_dim):
+#                results = classrooms[i]
+#                student = results[0, row, col]
+#    
+#                # all possible combos of row +-1 and col +- 1 (with edge cases)
+#                neigh_rows = list(range(max(0, row - 1), min(row + 1, row_dim - 1) + 1))
+#                neigh_cols = list(range(max(0, col - 1), min(col + 1, col_dim - 1) + 1))
+#                positions = set(itr.product(neigh_rows, neigh_cols))
+#                positions.remove((row, col))   # remove student (student isn't neighbor of themselves)
+#    
+#                # adding all neighbors to given student
+#                for pos in positions:
+#                    student.add_neighbor(results[0, pos[0], pos[1]])
     
         # Recovery times: constant 8 days + geometric distribution with mean 2 days
         recovery_times = (np.random.geometric(recovery_time_dropoff_rate, size=row_dim * col_dim)) + recovery_time_fixed_days

@@ -15,14 +15,18 @@ class Student:
         # state 3 = recovered (immune)
         self.state = 0
         self.days_infected = list()
+        
+        # set of student's neighbors throughout the day
         self.neighbors = set()
+        # set of (room, row, col) the student is in during the day
+        self.seats = list()
 
         # determined using geometric distribution
         self.stays_sick_for = 10  # 10 is placeholder for now
 
     # toString method
     def __repr__(self):
-        return str(self.state)
+        return "Student(" + str(self.state) + ")"
 
     def set_days_sick(self, days_sick):
         self.stays_sick_for = days_sick
@@ -35,6 +39,11 @@ class Student:
 
     def add_neighbor(self, other):
         self.neighbors.add(other)
+        
+    def add_seat(self, seat):
+        '''Given seat = (room_index, row, column), adds that seat to student's
+        list of seats visited throughout the day'''
+        self.seats.append(seat)
 
     def get_neighbors(self):
         return self.neighbors
