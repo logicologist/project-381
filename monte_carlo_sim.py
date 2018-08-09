@@ -9,6 +9,7 @@ from graphing import *
 
 from Student import *
 from room_assign import *
+from graphing import *
 
 r.seed(42) # for reproducability
 
@@ -104,7 +105,7 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
     patient_zero.set_state(2)
     patient_zero.add_day_infected(0)
     
-    return classrooms
+    return (classrooms, student_list)
 
 
 
@@ -122,7 +123,7 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
 def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student = 1, weekends=False):
 
     # list of results for all classrooms (list of our ndarrays)
-    classrooms = initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student)
+    (classrooms, students) = initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student)
 
     # prints initial room state for each classroom
 #    print("Day: 0 \n")
@@ -140,7 +141,7 @@ def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, cla
 #            print("Classroom: " + str(i + 1))
 #            print(str(results[day, :, :]) + "\n")
 
-    return classrooms
+    return (classrooms, students)
 
 
 # classroom dimensions: each tuple = 1 classroom (rows, columns)
@@ -158,6 +159,12 @@ class_sizes = [(4, 6), # BAG 106
                (12, 16), # JHN 102
                (3, 14), # JHN 111
                (4, 16), # JHN 175
+               (11, 21), # KNE 110
+               (15, 30), # KNE 120
+               (15, 36), # KNE 130 first floor
+               (5, 26), # KNE 130 balcony
+               (8, 28), # KNE 210
+               (8, 31), # KNE 220
                ]
 
 trials = 5 # number of times to run simulation
@@ -172,17 +179,22 @@ vaccination_effectiveness = 0.39 # percent effectiveness of vaccine
 recovery_time_fixed_days = 6 # constant number of days that an infected student is sick and infectious at minimum
 recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers (stops being infectious) with this probability each day
 
+# classrooms[which_trial][which_classroom][which_time_step][row][column]
 classrooms_list = []
+students_list = []
 for trial in range(trials):
-    classrooms = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
-    classrooms_list.append(classrooms)
-    # What the classrooms data structure looks like:
     # classrooms[which_classroom][which_time_step][row][column]
+    # students[which_student]
+    (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
+    classrooms_list.append(classrooms)
+    students_list.append(students)
 
 f1 = plt.figure(1)
 graph_frac_infected(classrooms_list, time_steps)
 f2 = plt.figure(2)
 graph_days_infected(classrooms_list, time_steps)
+f3 = plt.figure(3)
+graph_disease_burden(students_list, time_steps)
 
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
