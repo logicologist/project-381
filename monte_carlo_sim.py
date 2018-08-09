@@ -114,18 +114,6 @@ def run_simulation(infect_rate, vaccination_rate, class_sizes, time_steps, class
     # list of results for all classrooms (list of our ndarrays)
     classrooms = initialize_classrooms(vaccination_rate, class_sizes, time_steps, classes_per_student)
 
-#    for cs in class_sizes:
-        # we also may want to consider creating a vector of students, and passing
-        # a random subset of these to each initialize call in an attempt to
-        # randomly populate our classes with a shared collection of students
-#        classrooms.append(initialize_class(cs, time_steps))
-
-        # i.e. if we want to assign each student to 3 classes, we could create
-        # sum(class_room_sizes) / 3 students --> [S1 S2 S3 S4 ...]
-        # then we could duplicate these references doing [S1 S2 S3 S4 ...] * 3
-        # and sample the proper number of students for each class; This wont be an issue
-        # as long as no classroom is > 1/3 the sum of all class room sizes.
-
     # prints initial room state for each classroom
 #    print("Day: 0 \n")
 #    for i, results in enumerate(classrooms):
