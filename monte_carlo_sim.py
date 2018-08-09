@@ -45,7 +45,6 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         class_sizes - list of tuples containing (row, column) dimensions of rooms
         num_days - days to run simulation for
         classes_per_student - int for number of class periods'''
-#    classrooms = np.empty((0, 3), dtype=object)
     classrooms = list()
     student_list = np.empty((0), dtype=object)
     for class_size in class_sizes:
@@ -53,31 +52,18 @@ def initialize_classrooms(class_sizes, num_days, classes_per_student):
         row_dim = class_size[0]
         col_dim = class_size[1]
         results = np.ndarray(shape=(num_days, row_dim, col_dim), dtype=object)
-    
-        # again, in the future we might consider creating all our students first
-        # so we can randomly distribute them throughout the classrooms
+        # create students
         for row in range(row_dim):
             for col in range(col_dim):
                 results[0, row, col] = Student()
-#        classrooms = np.append(classrooms, np.reshape(results, (1, num_days, row_dim, col_dim)), 0)
         classrooms.append(results)
         student_list = np.append(student_list, results[0].flatten())
-#    print(classrooms)
-#    print(str(len(classrooms)) + " x " + str(classrooms[0].shape))
-#    print(student_list)
-#    print(student_list.shape)
-#    classrooms = np.array(classrooms) # converting list(ndarray) to ndarray
-    
-#    # get list of students
-#    room_size = []
-#    for dim in class_sizes:  # for each set of dim in room_dim
-#        room_size.append(dim[0] * dim[1])  # size = r * c
-#    num_students = sum(room_size)  # total number of students
-#    student_list = classrooms.reshape((num_students))
     
     for i, class_size in enumerate(class_sizes):
         row_dim = class_size[0]
         col_dim = class_size[1]
+        
+        # Compute neighbors: this code will go away when room-assign.py code is fully integrated
         for row in range(row_dim):
             for col in range(col_dim):
                 results = classrooms[i]
