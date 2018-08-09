@@ -180,6 +180,7 @@ graph_disease_burden(students_list, time_steps)
 
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
+f3.savefig('sim-data/disease_burden.pdf')
 
 plt.show()
 
