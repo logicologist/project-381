@@ -179,7 +179,9 @@ vaccination_effectiveness = 0.39 # percent effectiveness of vaccine
 recovery_time_fixed_days = 6 # constant number of days that an infected student is sick and infectious at minimum
 recovery_time_dropoff_rate = 0.5 # after fixed days, student recovers (stops being infectious) with this probability each day
 
-# classrooms[which_trial][which_classroom][which_time_step][row][column]
+# EXPERIMENT 1: analyses with standard parameters
+# classrooms_list[which_trial][which_classroom][which_time_step][row][column]
+# students_list[which_trial][which_student]
 classrooms_list = []
 students_list = []
 for trial in range(trials):
@@ -188,7 +190,6 @@ for trial in range(trials):
     (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
     classrooms_list.append(classrooms)
     students_list.append(students)
-
 f1 = plt.figure(1)
 graph_frac_room_infected(classrooms_list, time_steps)
 f2 = plt.figure(2)
@@ -196,6 +197,7 @@ graph_days_infected(classrooms_list, time_steps)
 f3 = plt.figure(3)
 graph_disease_burden(students_list, time_steps)
 
+# EXPERIMENT 2: varying vaccination rate, holding all other params at standard
 f4 = plt.figure(4)
 f5 = plt.figure(5)
 v_rates = (0.46, 0.56, 0.66, 0.76, 0.86, 0.96)
@@ -216,6 +218,7 @@ plt.legend(loc='best')
 plt.figure(5)
 plt.legend(loc='best')
 
+# EXPERIMENT 3: varying infection rate, holding all other params at standard
 f6 = plt.figure(6)
 f7 = plt.figure(7)
 infect_rates = (0.15, 0.13, 0.11, 0.09, 0.07, 0.05, 0.03, 0.01)
@@ -236,12 +239,37 @@ plt.legend(loc='best')
 plt.figure(7)
 plt.legend(loc='best')
 
+# EXPERIMENT 4: different constant for infection rate, varying vaccination rate, holding all other params at standard
+f8 = plt.figure(8)
+f9 = plt.figure(9)
+new_infect_rate = 0.03
+v_rates = (0.46, 0.56, 0.66, 0.76, 0.86, 0.96)
+for v_rate in v_rates:
+    classrooms_list = []
+    students_list = []
+    for trial in range(trials):
+        (classrooms, students) = run_simulation(new_infect_rate, v_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
+        classrooms_list.append(classrooms)
+        students_list.append(students)
+    plt.figure(8)
+    graph_disease_burden(students_list, time_steps, lbl=str(round(v_rate*100,1))+"% vaccinated", legend=True)
+    plt.figure(9)
+    graph_frac_students_infected(students_list, time_steps, lbl=str(round(v_rate*100,1))+"% vaccinated")
+# ... and put legends on the figures
+plt.figure(8)
+plt.legend(loc='best')
+plt.figure(9)
+plt.legend(loc='best')
+
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
 f3.savefig('sim-data/disease_burden.pdf')
 f4.savefig('sim-data/disease_burden_varying_vrate.pdf')
 f5.savefig('sim-data/frac_students_infected_varying_vrate.pdf')
 f6.savefig('sim-data/disease_burden_varying_p.pdf')
+f7.savefig('sim-data/frac_students_infected_varying_p.pdf')
+f8.savefig('sim-data/disease_burden_diff_p_vary_vrate.pdf')
+f9.savefig('sim-data/frac_students_infected_diff_p_vary_vrate.pdf')
 
 plt.show()
 
