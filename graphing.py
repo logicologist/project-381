@@ -90,7 +90,7 @@ def graph_disease_burden(students_list, num_days, v_rate=0.46, legend=False):
                 for day in range(day_one, num_days):
                     sick_counts[day] += 1
     for i in range(len(sick_counts)):
-        sick_counts[i] /= (n_students * n_trials)
+        sick_counts[i] /= 1.0*(n_students * n_trials)
     if (legend):
         plt.plot(list(range(num_days)), sick_counts, label=str(round(v_rate*100,1))+"% vaccinated")
     else:
