@@ -196,8 +196,23 @@ graph_days_infected(classrooms_list, time_steps)
 f3 = plt.figure(3)
 graph_disease_burden(students_list, time_steps)
 
+f4 = plt.figure(4)
+v_rates = (0.46, 0.56, 0.66, 0.76, 0.86, 0.96)
+for v_rate in v_rates:
+    classrooms_list = []
+    students_list = []
+    for trial in range(trials):
+        (classrooms, students) = run_simulation(infection_rate, v_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
+        classrooms_list.append(classrooms)
+        students_list.append(students)
+    graph_disease_burden(students_list, time_steps, v_rate, legend=True)
+# ... and label the figure
+plt.legend(loc='best')
+
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
+f3.savefig('sim-data/disease_burden.pdf')
+f4.savefig('sim-data/disease_burden_varying_vrate.pdf')
 
 plt.show()
 
