@@ -185,7 +185,7 @@ students_list = []
 for trial in range(trials):
     # classrooms[which_classroom][which_time_step][row][column]
     # students[which_student]
-    (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
+    (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
     classrooms_list.append(classrooms)
     students_list.append(students)
 
@@ -202,7 +202,7 @@ for v_rate in v_rates:
     classrooms_list = []
     students_list = []
     for trial in range(trials):
-        (classrooms, students) = run_simulation(infection_rate, v_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
+        (classrooms, students) = run_simulation(infection_rate, v_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
         classrooms_list.append(classrooms)
         students_list.append(students)
     graph_disease_burden(students_list, time_steps, v_rate, legend=True)
