@@ -190,13 +190,14 @@ for trial in range(trials):
     students_list.append(students)
 
 f1 = plt.figure(1)
-graph_frac_infected(classrooms_list, time_steps)
+graph_frac_room_infected(classrooms_list, time_steps)
 f2 = plt.figure(2)
 graph_days_infected(classrooms_list, time_steps)
 f3 = plt.figure(3)
 graph_disease_burden(students_list, time_steps)
 
 f4 = plt.figure(4)
+f5 = plt.figure(5)
 v_rates = (0.46, 0.56, 0.66, 0.76, 0.86, 0.96)
 for v_rate in v_rates:
     classrooms_list = []
@@ -205,11 +206,18 @@ for v_rate in v_rates:
         (classrooms, students) = run_simulation(infection_rate, v_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
         classrooms_list.append(classrooms)
         students_list.append(students)
+    plt.figure(4)
     graph_disease_burden(students_list, time_steps, lbl=str(round(v_rate*100,1))+"% vaccinated", legend=True)
-# ... and label the figure
+    plt.figure(5)
+    graph_frac_students_infected(students_list, time_steps, lbl=str(round(v_rate*100,1))+"% vaccinated")
+# ... and put legends on the figures
+plt.figure(4)
+plt.legend(loc='best')
+plt.figure(5)
 plt.legend(loc='best')
 
-f5 = plt.figure(5)
+f6 = plt.figure(6)
+f7 = plt.figure(7)
 infect_rates = (0.15, 0.13, 0.11, 0.09, 0.07, 0.05, 0.03, 0.01)
 for i_rate in infect_rates:
     classrooms_list = []
@@ -218,15 +226,22 @@ for i_rate in infect_rates:
         (classrooms, students) = run_simulation(i_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
         classrooms_list.append(classrooms)
         students_list.append(students)
+    plt.figure(6)
     graph_disease_burden(students_list, time_steps, lbl=str(round(i_rate*100,1))+"% infection rate", legend=True)
-# ... and label the figure
+    plt.figure(7)
+    graph_frac_students_infected(students_list, time_steps, lbl=str(round(i_rate*100,1))+"% infection rate")
+# ... and put legends on the figures
+plt.figure(6)
+plt.legend(loc='best')
+plt.figure(7)
 plt.legend(loc='best')
 
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
 f3.savefig('sim-data/disease_burden.pdf')
 f4.savefig('sim-data/disease_burden_varying_vrate.pdf')
-f5.savefig('sim-data/disease_burden_varying_p.pdf')
+f5.savefig('sim-data/frac_students_infected_varying_vrate.pdf')
+f6.savefig('sim-data/disease_burden_varying_p.pdf')
 
 plt.show()
 

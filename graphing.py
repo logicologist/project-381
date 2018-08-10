@@ -6,7 +6,7 @@ from Student import *
 from room_assign import *
 
 
-def graph_frac_infected(classrooms_list, num_days):
+def graph_frac_room_infected(classrooms_list, num_days):
     ''' Graphs the average fraction of classroom infected for each classroom,
     averaged over all trials run. Params:
         classrooms_list[which_trial][which_classroom][which_time_step][row][column]
@@ -42,6 +42,30 @@ def graph_frac_infected(classrooms_list, num_days):
     # Label figure
 #    plt.legend(loc='best')
     plt.ylabel("Fraction Classroom Infected")
+    plt.xlabel("Day")
+    plt.xticks(list(range(0, num_days, 5)))
+
+
+def graph_frac_students_infected(students_list, num_days, lbl=''):
+    ''' Graphs the fraction of students currently infected at each time step,
+    averaged over all trials run. Params:
+        students_list[which_trial][which_student]
+        num_days: number of time steps'''
+    t_vals = list(range(num_days))
+    n_trials = len(students_list)
+    n_students = len(students_list[0])
+    
+    counts = list()
+    for trial in range(len(students_list)):
+        for student in students_list[trial]:
+            counts += student.days_infected
+            
+    avg_frac_sick = [counts.count(x) * 1.0 / (n_students * n_trials) for x in t_vals]
+    if (lbl != ''):
+        plt.plot(t_vals, avg_frac_sick, label=lbl)
+    else:
+        plt.plot(t_vals, avg_frac_sick)
+    plt.ylabel("Fraction of Students Infected")
     plt.xlabel("Day")
     plt.xticks(list(range(0, num_days, 5)))
 
