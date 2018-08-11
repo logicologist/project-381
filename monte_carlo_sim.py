@@ -199,6 +199,15 @@ for trial in range(trials):
     (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True)
     classrooms_list.append(classrooms)
     students_list.append(students)
+# Sanity check: derive R_0 for this student population; should be higher than initial R_0
+neighbor_avgs = list()
+for students in students_list:
+    neighbor_list = [len(student.neighbors) for student in students]
+    neighbor_avgs.append(sum(neighbor_list) / len(neighbor_list))
+avg_neighbors = sum(neighbor_avgs) / len(neighbor_avgs)
+R_0_students = avg_neighbors * infection_rate
+print("POPULATION R_0: " + str(R_0) + "\nSTUDENT R_0: " + str(R_0_students))
+# Graph results
 f1 = plt.figure(1)
 graph_frac_room_infected(classrooms_list, time_steps)
 f2 = plt.figure(2)
