@@ -19,8 +19,6 @@ def update_states(room, infect_rate, day, weekends = False):
         for col in range(shape[1]):
             student = room[row, col]
 
-            # Probabilistic Updates: Using our Markov Chain
-
             # implementing "weekend": only run this section if
             #       student.get_state() = 2 (i.e. we are sick = chance to recover over weekend)
             #       not day % 7 in [5,6] --> we are not on a weekend; 5,6 arbitrary
@@ -43,14 +41,15 @@ def update_states(room, infect_rate, day, weekends = False):
                         student.set_state(2)
 
 
-def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, num_days, classes_per_student):
+def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, num_days, classes_per_student, init_patients):
     '''Initializes a set of classrooms (populated with students) given room sizes
     Params:
         vaccination_rate - fraction of students who get vaccinated
         vaccination_effectiveness - percent effectiveness of vaccine
         class_sizes - list of tuples containing (row, column) dimensions of rooms
         num_days - days to run simulation for
-        classes_per_student - int for number of class periods'''
+        classes_per_student - int for number of class periods
+        init_patients - int for number of students who initially have the flu'''
     classrooms = list()
     student_list = np.empty((0), dtype=object)
     for class_size in class_sizes:
@@ -99,11 +98,19 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
     for i in range(len(student_list)):
         student_list[i].set_recovery_time(recovery_times[i])
 
-    # infect random student: patient zero
-    # we can change/expand upon this with future ideas (i.e. vaccinations)
-    patient_zero = student_list[np.random.randint(0, len(student_list))]
-    patient_zero.set_state(2)
-    patient_zero.add_day_infected(0)
+    # infect init_patients random students
+    susceptible_students = [student for student in student_list if student.get_state() == 0]
+    r.shuffle(susceptible_students)
+    for i in range(init_patients):
+        if (i < len(susceptible_students)):
+            patient_zero = susceptible_students[i]
+            patient_zero.set_state(2)
+            patient_zero.add_day_infected(0)
+        else:
+            print("WARNING: more initial patients than susceptible students")
+#    patient_zero = student_list[np.random.randint(0, len(student_list))]
+#    patient_zero.set_state(2)
+#    patient_zero.add_day_infected(0)
     
     return (classrooms, student_list)
 
@@ -120,10 +127,10 @@ def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_siz
 #       time_steps = days to run simulation for (int)
 #       classes_per_student = allows a student to be placed in multiple classrooms; allows cross-infection (int)
 #       weekends = True to include weekends (i.e. no class Sat/Sun; cannot spread flu) but allows sick to recover
-def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student = 1, weekends=False):
+def run_simulation(infect_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student = 1, weekends=False, init_patients=1):
 
     # list of results for all classrooms (list of our ndarrays)
-    (classrooms, students) = initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student)
+    (classrooms, students) = initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student, init_patients)
 
     # prints initial room state for each classroom
 #    print("Day: 0 \n")
@@ -167,10 +174,12 @@ class_sizes = [(4, 6), # BAG 106
                (8, 31), # KNE 220
                ]
 
-trials = 5 # number of times to run simulation
+trials = 10 # number of times to run simulation
 time_steps = 100  # days to run simulation for
 num_periods = 3 # number of class periods in the day
-infection_rate = 0.15 # chance per sick neighbor of spreading infection
+R_0 = 1.3 # virulence of flu: reproductive number
+lambda_interactions = 13.4 # average number of interactions during the day for an average person
+infection_rate = (R_0 / lambda_interactions) # chance per sick neighbor of spreading infection
 vaccination_rate = 0.46 # percentage of students who get vaccinated
 vaccination_effectiveness = 0.39 # percent effectiveness of vaccine
 # Note: recovery time parameters are tuned for infectiousness
@@ -196,6 +205,22 @@ f2 = plt.figure(2)
 graph_days_infected(classrooms_list, time_steps)
 f3 = plt.figure(3)
 graph_disease_burden(students_list, time_steps)
+f10 = plt.figure(10)
+graph_disease_burden(students_list, int(0.2 * time_steps))
+
+# EXPERIMENT 1.1: analysis with standard parameters except weekends turned off
+classrooms_list = []
+students_list = []
+for trial in range(trials):
+    # classrooms[which_classroom][which_time_step][row][column]
+    # students[which_student]
+    (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=False)
+    classrooms_list.append(classrooms)
+    students_list.append(students)
+f11 = plt.figure(11)
+graph_disease_burden(students_list, time_steps)
+f12 = plt.figure(12)
+graph_disease_burden(students_list, int(0.2 * time_steps))
 
 # EXPERIMENT 2: varying vaccination rate, holding all other params at standard
 f4 = plt.figure(4)
@@ -261,15 +286,41 @@ plt.legend(loc='best')
 plt.figure(9)
 plt.legend(loc='best')
 
+# EXPERIMENT 5: standard constants, varying initial number of patients with the flu
+f13 = plt.figure(13)
+f14 = plt.figure(14)
+n_init = (1, 2, 3, 4, 5, 6)
+for n in n_init:
+    classrooms_list = []
+    students_list = []
+    for trial in range(trials):
+        (classrooms, students) = run_simulation(infection_rate, vaccination_rate, vaccination_effectiveness, class_sizes, time_steps, classes_per_student=num_periods, weekends=True, init_patients=n)
+        classrooms_list.append(classrooms)
+        students_list.append(students)
+    plt.figure(13)
+    graph_disease_burden(students_list, time_steps, lbl=str(n)+" initial patients", legend=True)
+    plt.figure(14)
+    graph_frac_students_infected(students_list, time_steps, lbl=str(n)+" initial patients")
+# ... and put legends on the figures
+plt.figure(13)
+plt.legend(loc='best')
+plt.figure(14)
+plt.legend(loc='best')
+
 f1.savefig('sim-data/frac_infected.pdf')
 f2.savefig('sim-data/days_infected.pdf')
 f3.savefig('sim-data/disease_burden.pdf')
+f10.savefig('sim-data/disease_burden_closeup.pdf')
+f11.savefig('sim-data/disease_burden_nowkend.pdf')
+f12.savefig('sim-data/disease_burden_nowkend_closeup.pdf')
 f4.savefig('sim-data/disease_burden_varying_vrate.pdf')
 f5.savefig('sim-data/frac_students_infected_varying_vrate.pdf')
 f6.savefig('sim-data/disease_burden_varying_p.pdf')
 f7.savefig('sim-data/frac_students_infected_varying_p.pdf')
 f8.savefig('sim-data/disease_burden_diff_p_vary_vrate.pdf')
 f9.savefig('sim-data/frac_students_infected_diff_p_vary_vrate.pdf')
+f13.savefig('sim-data/disease_burden_vary_init_patients.pdf')
+f14.savefig('sim-data/frac_students_infected_vary_init_patients.pdf')
 
 plt.show()
 

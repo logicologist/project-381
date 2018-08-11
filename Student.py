@@ -10,8 +10,7 @@ class Student:
     def __init__(self):
         # all possible states (subject to change)
         # state 0 = susceptible/uninfected
-
-        # state 2 = sick
+        # state 2 = infected
         # state 3 = recovered (immune)
         self.state = 0
         self.days_infected = list()
