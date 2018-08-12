@@ -76,7 +76,7 @@ def graph_days_infected(classrooms_list, num_days):
         classrooms_list[which_trial][which_classroom][which_time_step][row][column]
         num_days: number of time steps'''
     n_trials = len(classrooms_list)
-    
+    n_students = 0
     days_sick = list()
     for trial, classrooms in enumerate(classrooms_list):
         for i, cs in enumerate(classrooms):
@@ -84,17 +84,42 @@ def graph_days_infected(classrooms_list, num_days):
             for row in end_results:
                 for student in row:
                     days_sick += [len(student.days_infected)]
-    
+                    n_students += 1
     bin_width = 5
     edges = list(range(0, num_days + 1, bin_width))
     ax = plt.gca()
     plt.hist(days_sick, bins=edges, rwidth=0.9)
     y_vals = ax.get_yticks()
-    ax.set_yticklabels(['{:1.0f}'.format(x // n_trials) for x in y_vals])
+    ax.set_yticklabels(['{:1.0f}'.format(1.0 * x / (n_trials)) for x in y_vals])
     plt.title("Number of days spent sick (averaged across all trials)")
     plt.xlabel("Days Spent Sick")
     plt.ylabel("# Students")
     plt.xticks(edges)
+    
+def graph_days_infected_percent(students_list, num_days):
+    ''' Graphs the distribution of the number of days that students are
+    infected with the flu. Like the above, but with % students instead of
+    # students. Params:
+        students_list[which_trial][which_student]
+        num_days: number of time steps'''
+    n_trials = len(students_list)
+    n_students = len(students_list[0])
+    days_sick = [[0 for j in range(num_days)] for i in range(n_trials)]
+    for trial, students in enumerate(students_list):
+        for student in students:
+            days_sick[trial][len(student.days_infected)] += 1
+    # average across all trials
+    days_sick_avg = list()
+    for i in range(num_days):
+        trial_sick = [days_sick[trial][i] for trial in range(n_trials)]
+        days_sick_avg.append(sum(trial_sick) / len(trial_sick))
+    # turn avg counts into avg percent
+    days_sick_percent = [days_sick_avg[i] / n_students for i in range(len(days_sick_avg))]
+    while (days_sick_percent[-1] == 0):
+        days_sick_percent.pop()
+    plt.bar(list(range(len(days_sick_percent))), days_sick_percent)
+    plt.xlabel("Days Spent Sick")
+    plt.ylabel("% Students")
 
 
 def graph_disease_burden(students_list, num_days, lbl='', legend=False):
