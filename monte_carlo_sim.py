@@ -33,7 +33,6 @@ def update_states(room, infect_rate, day, weekends = False):
                     # determine if sick student recovers
                     if student.stays_sick_for <= len(student.days_infected):
                         new_student_states[row][col] = 3
-#                        student.set_state(3)
                     else:
                         new_student_states[row][col] = 2
 
@@ -44,7 +43,6 @@ def update_states(room, infect_rate, day, weekends = False):
                     prob_infected = 1 - (1 - infect_rate)**sick_neighbors
                     if rand_val <= prob_infected:
                         new_student_states[row][col] = 2
-#                        student.set_state(2)
                     else:
                         new_student_states[row][col] = student.get_state()
                         
@@ -156,39 +154,39 @@ class_sizes = [(4, 6), # BAG 106
                (3, 14), # JHN 111
                (4, 16), # JHN 175
                (11, 21), # KNE 110
-#               (15, 30), # KNE 120
-#               (15, 36), # KNE 130 first floor
-#               (5, 26), # KNE 130 balcony
-#               (8, 28), # KNE 210
-#               (8, 31), # KNE 220
-#               (7, 8), # MEB 103
-#               (4, 8), # MEB 234
-#               (4, 8), # MEB 235
-#               (4, 8), # MEB 237
-#               (4, 16), # MEB 238
-#               (6, 7), # MEB 242
-#               (3, 8), # MEB 243
-#               (4, 8), # MEB 245
-#               (7, 8), # MEB 246
-#               (7, 8), # MEB 248
-#               (4, 8), # MEB 250
-#               (3, 10), # MEB 251
-#               (8, 10), # SMI 102
-#               (5, 8), # SMI 105
-#               (2, 9), # SMI 107
-#               (2, 12), # SMI 115
-#               (13, 19), # SMI 120
-#               (13, 8), # SMI 205
-#               (10, 9), # SMI 211
-#               (7, 10), # SMI 304
-#               (5, 8), # SMI 305
-#               (4, 9), # SMI 307
-#               (4, 8), # SMI 309
-#               (4, 8), # SMI 311
-#               (4, 8), # SMI 313
-#               (4, 9), # SMI 404
-#               (4, 10), # SMI 405
-#               (6, 7), # SMI 407
+               (15, 30), # KNE 120
+               (15, 36), # KNE 130 first floor
+               (5, 26), # KNE 130 balcony
+               (8, 28), # KNE 210
+               (8, 31), # KNE 220
+               (7, 8), # MEB 103
+               (4, 8), # MEB 234
+               (4, 8), # MEB 235
+               (4, 8), # MEB 237
+               (4, 16), # MEB 238
+               (6, 7), # MEB 242
+               (3, 8), # MEB 243
+               (4, 8), # MEB 245
+               (7, 8), # MEB 246
+               (7, 8), # MEB 248
+               (4, 8), # MEB 250
+               (3, 10), # MEB 251
+               (8, 10), # SMI 102
+               (5, 8), # SMI 105
+               (2, 9), # SMI 107
+               (2, 12), # SMI 115
+               (13, 19), # SMI 120
+               (13, 8), # SMI 205
+               (10, 9), # SMI 211
+               (7, 10), # SMI 304
+               (5, 8), # SMI 305
+               (4, 9), # SMI 307
+               (4, 8), # SMI 309
+               (4, 8), # SMI 311
+               (4, 8), # SMI 313
+               (4, 9), # SMI 404
+               (4, 10), # SMI 405
+               (6, 7), # SMI 407
                ]
 
 n_classrooms = 0
@@ -199,7 +197,7 @@ for room in class_sizes:
 print("Total number of classrooms in model: " + str(n_classrooms))
 print("Total number of classroom seats in model: " + str(n_seats))
 
-trials = 10 # number of times to run simulation
+trials = 20 # number of times to run simulation
 time_steps = 100  # days to run simulation for
 num_periods = 3 # number of class periods in the day
 R_0 = 1.3 # virulence of flu: reproductive number
@@ -386,22 +384,22 @@ plt.legend(loc='best')
 end_time = time.time()
 print("Seconds taken to run all experiments: " + str(end_time - start_time))
 
-f1.savefig('sim-data/frac_infected.pdf')
-f2.savefig('sim-data/days_infected.pdf')
-f3.savefig('sim-data/disease_burden.pdf')
-f10.savefig('sim-data/disease_burden_closeup.pdf')
-f11.savefig('sim-data/disease_burden_nowkend.pdf')
-f12.savefig('sim-data/disease_burden_nowkend_closeup.pdf')
-f4.savefig('sim-data/disease_burden_varying_vrate.pdf')
-f5.savefig('sim-data/frac_students_infected_varying_vrate.pdf')
-f6.savefig('sim-data/disease_burden_varying_p.pdf')
-f7.savefig('sim-data/frac_students_infected_varying_p.pdf')
-f8.savefig('sim-data/disease_burden_diff_p_vary_vrate.pdf')
-f9.savefig('sim-data/frac_students_infected_diff_p_vary_vrate.pdf')
-f13.savefig('sim-data/disease_burden_vary_init_patients.pdf')
-f14.savefig('sim-data/frac_students_infected_vary_init_patients.pdf')
-f15.savefig('sim-data/disease_burden_diff_p_vary_init_pations.pdf')
-f16.savefig('sim-data/frac_students_infected_diff_p_vary_init_patients.pdf')
+f1.savefig('sim-data/frac_infected.png')
+f2.savefig('sim-data/days_infected.png')
+f3.savefig('sim-data/disease_burden.png')
+f10.savefig('sim-data/disease_burden_closeup.png')
+f11.savefig('sim-data/disease_burden_nowkend.png')
+f12.savefig('sim-data/disease_burden_nowkend_closeup.png')
+f4.savefig('sim-data/disease_burden_varying_vrate.png')
+f5.savefig('sim-data/frac_students_infected_varying_vrate.png')
+f6.savefig('sim-data/disease_burden_varying_p.png')
+f7.savefig('sim-data/frac_students_infected_varying_p.png')
+f8.savefig('sim-data/disease_burden_diff_p_vary_vrate.png')
+f9.savefig('sim-data/frac_students_infected_diff_p_vary_vrate.png')
+f13.savefig('sim-data/disease_burden_vary_init_patients.png')
+f14.savefig('sim-data/frac_students_infected_vary_init_patients.png')
+f15.savefig('sim-data/disease_burden_diff_p_vary_init_pations.png')
+f16.savefig('sim-data/frac_students_infected_diff_p_vary_init_patients.png')
 
 plt.show()
 
