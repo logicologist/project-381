@@ -14,8 +14,11 @@ from graphing import *
 
 def update_states(room, infect_rate, day, weekends = False):
     shape = np.shape(room)
+    new_student_states = list()
     for row in range(shape[0]):
+        new_student_states.append(list())
         for col in range(shape[1]):
+            new_student_states[row].append(0)
             student = room[row, col]
 
             # implementing "weekend": only run this section if
@@ -29,15 +32,30 @@ def update_states(room, infect_rate, day, weekends = False):
 
                     # determine if sick student recovers
                     if student.stays_sick_for <= len(student.days_infected):
-                        student.set_state(3)
+                        new_student_states[row][col] = 3
+#                        student.set_state(3)
+                    else:
+                        new_student_states[row][col] = 2
 
                 # determine if uninfected student gets infected; more sick people around them
                 # leads to higher infection rate
-                if student.get_state() == 0:
+                elif student.get_state() == 0:
                     sick_neighbors = [n.get_state() for n in student.get_neighbors()].count(2)
                     prob_infected = 1 - (1 - infect_rate)**sick_neighbors
                     if rand_val <= prob_infected:
-                        student.set_state(2)
+                        new_student_states[row][col] = 2
+#                        student.set_state(2)
+                    else:
+                        new_student_states[row][col] = student.get_state()
+                        
+                else:
+                    new_student_states[row][col] = student.get_state()
+            else:
+                new_student_states[row][col] = student.get_state()
+    for row in range(shape[0]):
+        for col in range(shape[1]):
+            student = room[row, col]
+            student.set_state(new_student_states[row][col])
 
 
 def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, num_days, classes_per_student, init_patients):
@@ -138,39 +156,39 @@ class_sizes = [(4, 6), # BAG 106
                (3, 14), # JHN 111
                (4, 16), # JHN 175
                (11, 21), # KNE 110
-               (15, 30), # KNE 120
-               (15, 36), # KNE 130 first floor
-               (5, 26), # KNE 130 balcony
-               (8, 28), # KNE 210
-               (8, 31), # KNE 220
-               (7, 8), # MEB 103
-               (4, 8), # MEB 234
-               (4, 8), # MEB 235
-               (4, 8), # MEB 237
-               (4, 16), # MEB 238
-               (6, 7), # MEB 242
-               (3, 8), # MEB 243
-               (4, 8), # MEB 245
-               (7, 8), # MEB 246
-               (7, 8), # MEB 248
-               (4, 8), # MEB 250
-               (3, 10), # MEB 251
-               (8, 10), # SMI 102
-               (5, 8), # SMI 105
-               (2, 9), # SMI 107
-               (2, 12), # SMI 115
-               (13, 19), # SMI 120
-               (13, 8), # SMI 205
-               (10, 9), # SMI 211
-               (7, 10), # SMI 304
-               (5, 8), # SMI 305
-               (4, 9), # SMI 307
-               (4, 8), # SMI 309
-               (4, 8), # SMI 311
-               (4, 8), # SMI 313
-               (4, 9), # SMI 404
-               (4, 10), # SMI 405
-               (6, 7), # SMI 407
+#               (15, 30), # KNE 120
+#               (15, 36), # KNE 130 first floor
+#               (5, 26), # KNE 130 balcony
+#               (8, 28), # KNE 210
+#               (8, 31), # KNE 220
+#               (7, 8), # MEB 103
+#               (4, 8), # MEB 234
+#               (4, 8), # MEB 235
+#               (4, 8), # MEB 237
+#               (4, 16), # MEB 238
+#               (6, 7), # MEB 242
+#               (3, 8), # MEB 243
+#               (4, 8), # MEB 245
+#               (7, 8), # MEB 246
+#               (7, 8), # MEB 248
+#               (4, 8), # MEB 250
+#               (3, 10), # MEB 251
+#               (8, 10), # SMI 102
+#               (5, 8), # SMI 105
+#               (2, 9), # SMI 107
+#               (2, 12), # SMI 115
+#               (13, 19), # SMI 120
+#               (13, 8), # SMI 205
+#               (10, 9), # SMI 211
+#               (7, 10), # SMI 304
+#               (5, 8), # SMI 305
+#               (4, 9), # SMI 307
+#               (4, 8), # SMI 309
+#               (4, 8), # SMI 311
+#               (4, 8), # SMI 313
+#               (4, 9), # SMI 404
+#               (4, 10), # SMI 405
+#               (6, 7), # SMI 407
                ]
 
 n_classrooms = 0
@@ -181,7 +199,7 @@ for room in class_sizes:
 print("Total number of classrooms in model: " + str(n_classrooms))
 print("Total number of classroom seats in model: " + str(n_seats))
 
-trials = 20 # number of times to run simulation
+trials = 10 # number of times to run simulation
 time_steps = 100  # days to run simulation for
 num_periods = 3 # number of class periods in the day
 R_0 = 1.3 # virulence of flu: reproductive number
