@@ -14,7 +14,6 @@ from graphing import *
 
 def update_states(room, infect_rate, day, weekends = False):
     shape = np.shape(room)
-
     for row in range(shape[0]):
         for col in range(shape[1]):
             student = room[row, col]
@@ -22,8 +21,15 @@ def update_states(room, infect_rate, day, weekends = False):
             # implementing "weekend": only run this section if
             #       student.get_state() = 2 (i.e. we are sick = chance to recover over weekend)
             #       not day % 7 in [5,6] --> we are not on a weekend; 5,6 arbitrary
-            if not weekends or day % 7 in [5, 6]:
+            if not weekends or (student.get_state() == 2 or not day % 7 in [5, 6]):
                 rand_val = r.random()
+
+                if student.get_state() == 2:
+                    student.days_infected.append(day)
+
+                    # determine if sick student recovers
+                    if student.stays_sick_for <= len(student.days_infected):
+                        student.set_state(3)
 
                 # determine if uninfected student gets infected; more sick people around them
                 # leads to higher infection rate
@@ -31,23 +37,7 @@ def update_states(room, infect_rate, day, weekends = False):
                     sick_neighbors = [n.get_state() for n in student.get_neighbors()].count(2)
                     prob_infected = 1 - (1 - infect_rate)**sick_neighbors
                     if rand_val <= prob_infected:
-                        student.set_state(1)  # infected but not infectious
-
-    for row in range(shape[0]):
-        for col in range(shape[1]):
-            student = room[row, col]
-
-        if student.get_state() == 2:
-            student.days_infected.append(day)
-
-            # determine if sick student recovers
-            if student.stays_sick_for <= len(student.days_infected):
-                student.set_state(3)
-
-        # infected student becomes infectious
-        if student.get_state() == 1:
-            student.set_state(2)
-
+                        student.set_state(2)
 
 
 def initialize_classrooms(vaccination_rate, vaccination_effectiveness, class_sizes, num_days, classes_per_student, init_patients):
